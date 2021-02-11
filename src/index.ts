@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 // TODO it might be worth to change it to https later
 import { Server, createServer } from 'http'
+import { Database } from './common/database';
 import { ApiRouter } from './routes';
 
 function errorCatch(error: any) {
@@ -38,6 +39,8 @@ class NodeServer {
     private express: Express;
     private server: Server;
 
+    private database?: Database;
+
     private port?: number | string;
 
     private listen(): void {
@@ -49,11 +52,16 @@ class NodeServer {
     private async configure(): Promise<void> {
         // Reroute calls to main router
         this.express.use('/api', await ApiRouter.createRouter())
+
+        this.database = await Database.init();
     }
     
     private async stop(): Promise<void> {
         console.info("Closing server")
         this.server.close()
+        if (this.database) {
+            this.database.stop();
+        }
     }
 
     private onListening(): void {
@@ -71,7 +79,7 @@ class NodeServer {
         if (val >= 0) {
             return val
         }
-        
+
         return undefined;
     }
 }

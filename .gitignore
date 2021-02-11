@@ -3,6 +3,8 @@ node_modules/
 
 dist/
 
+dev/data
+
 yarn-error.log*
 yarn-debug.log*
 
