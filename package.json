@@ -2,7 +2,7 @@
   "name": "swapshop-db-api",
   "version": "1.0.0",
   "description": "Database api for SwapShop project",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": "git@bitbucket.org:Jakub_Kus/swapshop-db-api.git",
   "author": "Jakub Kus (kuskuba@gmail.com)",
   "license": "UNLICENSED",
