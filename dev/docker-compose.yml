@@ -1,0 +1,17 @@
+version: '2'
+services:
+  mongo:
+    image: mongo:4.4
+    command: ["mongod"]
+    user: "1000:1000"
+    ports: 
+      - "27017:27017"
+    volumes:
+      - "./data:/data/db"
+    mem_limit: 2048m
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "9081:8081"
+    depends_on:
+      - mongo
