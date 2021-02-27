@@ -3,6 +3,8 @@ import express, { Express } from 'express';
 import { Server, createServer } from 'http'
 import { Database } from './common/database';
 import { ApiRouter } from './routes';
+import BodyParser from 'body-parser';
+import CookieParser from 'cookie-parser';
 
 function errorCatch(error: any) {
     console.error(error);
@@ -50,10 +52,21 @@ class NodeServer {
     }
 
     private async configure(): Promise<void> {
-        // Reroute calls to main router
-        this.express.use('/api', await ApiRouter.createRouter())
+
+        this.express.use(BodyParser.json());
+        this.express.use(BodyParser.urlencoded({ extended: true }));
+        this.express.use(CookieParser())
 
         this.database = await Database.init();
+
+        // Pass db as a locals
+        this.express.use((_req, res, next) => {
+            res.locals.db = this.database;
+            next()
+        })
+
+        // Reroute calls to main router
+        this.express.use('/api', await ApiRouter.create())
     }
     
     private async stop(): Promise<void> {
