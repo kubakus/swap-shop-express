@@ -1,16 +1,16 @@
-import { Base } from "./base";
+import { Base } from './base';
 
 export namespace Roles {
-    export const enum Type {
-        ADMIN = 'admin',
-        USER = 'user',
-    }
+  export const enum Type {
+    ADMIN = 'admin',
+    USER = 'user',
+  }
 
-    export interface Role extends Base.Record {
-        role: Type;
-    }
+  export interface Role extends Base.Record {
+    role: Type;
+  }
 
-    export interface CreateRequest {
-        role: Type;
-    }
+  export interface CreateRequest {
+    role: Type;
+  }
 }

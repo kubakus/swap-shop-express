@@ -1,24 +1,17 @@
-import { Router } from "express";
-import { handle } from "../common/handler";
-import { authentication } from "../middlewares/auth-middleware";
-import { RolesRouter } from "./roles";
-import { UsersRouter } from "./users";
-
+import { Router } from 'express';
+import { OffersRouter } from './offers';
+import { RolesRouter } from './roles';
+import { UsersRouter } from './users';
+import { WantedRouter } from './wanted';
 
 export class ApiRouter {
-    public static async create(): Promise<Router> {
-        const router = Router()
-        router.get(
-            '/work',
-            authentication(),
-            handle( async ({ res}) => {
-                res.sendStatus(200)
-            })
-        )
-        router.use('/roles', await RolesRouter.init())
-        router.use('/users', await UsersRouter.init())
-        // TODO Add routes/subrouters here
-        
-        return router
-    }
+  public static async create(): Promise<Router> {
+    const router = Router();
+    router.use('/roles', await RolesRouter.init());
+    router.use('/users', await UsersRouter.init());
+    router.use('/offers', await OffersRouter.init());
+    router.use('/wanted', await WantedRouter.init());
+
+    return router;
+  }
 }
