@@ -1,10 +1,11 @@
-import { getEnvVar } from "./env-utils";
-export const DB_NAME = 'swapshop'
-
+import { getEnvVar } from './env-utils';
+export const DB_NAME = 'swapshop';
 
 // MongoDb collections' names;
 export const COLLECTION_ROLES = 'roles';
 export const COLLECTION_USERS = 'users';
+export const COLLECTION_OFFERS = 'offers';
+export const COLLECTION_WANTED = 'wanted';
 
 // Env Variables
 export const MONGO_URI = getEnvVar('MONGO_URI');

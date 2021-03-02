@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { handleBasic } from '../common/handler';
+import { handleBasic } from './handler';
 import Jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { SECRET_KEY } from '../common/config';
 import { Users } from '../models/users';
