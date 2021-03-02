@@ -1,10 +1,9 @@
-import { BaseError } from "./baser-error";
+import { BaseError } from './base-error';
 
-export class BadRequestError extends BaseError{
-    public errorCode = 400;
+export class BadRequestError extends BaseError {
+  public errorCode = 400;
 
-    public constructor (message?: string, errorObject?: unknown) {
-        super(message, errorObject)
-    }
-
+  public constructor(message?: string, errorObject?: unknown) {
+    super(message, errorObject);
+  }
 }
