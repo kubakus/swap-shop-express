@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { EventsRouter } from './events';
 import { OffersRouter } from './offers';
 import { RolesRouter } from './roles';
 import { UsersRouter } from './users';
@@ -11,6 +12,7 @@ export class ApiRouter {
     router.use('/users', await UsersRouter.init());
     router.use('/offers', await OffersRouter.init());
     router.use('/wanted', await WantedRouter.init());
+    router.use('/events', await EventsRouter.init());
 
     return router;
   }
