@@ -31,9 +31,7 @@ export class EventsDb {
   public async createEvent(params: unknown): Promise<Base.CreateResponse> {
     const validation = new Validator(params, CREATE_EVENT_VALIDATION_RULE);
     const isValid = validation.check();
-    console.log('date', getNextDate());
     if (!isValid) {
-      console.log('para', (params as any).when);
       throw new BadRequestError('Failed to validate request', validation.errors.all());
     }
 
