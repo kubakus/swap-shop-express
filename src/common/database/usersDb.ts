@@ -7,6 +7,7 @@ import Jwt from 'jsonwebtoken';
 import { Roles } from '../../models/roles';
 import Validator from 'validatorjs';
 import { BadRequestError } from '../errors/bad-request';
+import { ConflictError } from '../errors/conflict';
 
 type User = Omit<Users.User, 'id'> & { _id: ObjectId };
 // Don't send password back to user
@@ -50,6 +51,11 @@ export class UsersDb {
       password: await Bcryptjs.hash(request.password, salt),
       role: Roles.Type.USER,
     };
+    const exist = await collection.findOne({ email: request.email });
+    if (exist) {
+      throw new ConflictError('Email is present in the system');
+    }
+
     const result = await collection.insertOne(doc);
     if (!result.result.ok) {
       throw new Error('Failed to insert new role');

@@ -5,13 +5,8 @@ module.exports = {
     },
     'extends': [
         'plugin:@typescript-eslint/recommended',
-        // "prettier/@typescript-eslint",
         "plugin:prettier/recommended",
         'eslint:recommended',
-        // 'plugin:@typescript-eslint/recommended',
-        // "prettier/@typescript-eslint",
-        // "plugin:prettier/recommended",
-        // 'eslint:recommended',
     ],
     // Specifies the ESLint parser
     'parser': '@typescript-eslint/parser',
@@ -35,8 +30,5 @@ module.exports = {
         "no-unused-vars": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-namespace": "off"
-
-
-
     }
 };
