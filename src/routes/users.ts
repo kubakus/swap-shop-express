@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { handle } from '../middlewares/handler';
 import { authenticate } from '../middlewares/auth-middleware';
+import { UI_URL } from '../common/config';
 
 export class UsersRouter {
   public static async init(): Promise<Router> {
@@ -26,6 +27,15 @@ export class UsersRouter {
       handle(async ({ db, userId, res }) => {
         const result = await db.usersDb.getUserInfo(userId);
         res.send(result);
+      }),
+    );
+
+    router.get(
+      '/confirm/:confirmationCode',
+      handle(async ({ req, res, db }) => {
+        await db.usersDb.confirmUser(req.params.confirmationCode);
+        // should include env var
+        res.redirect(UI_URL);
       }),
     );
     return router;

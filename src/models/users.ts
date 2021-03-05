@@ -9,13 +9,19 @@ export namespace Users {
 
   export interface CreateDoc extends CreateRequest {
     role: Roles.Type.USER;
+    isVerified: false;
+    token: string;
   }
 
   export interface CreateRequest extends LoginDetails {
     name: string;
+    isVerified?: boolean;
   }
 
-  export interface User extends CreateDoc, Base.Record {}
+  export interface User extends CreateRequest, Base.Record {
+    isVerified: boolean;
+    role: Roles.Type.USER;
+  }
 
   export interface Token extends Base.Record {
     role: Roles.Type;
