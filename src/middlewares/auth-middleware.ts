@@ -6,20 +6,22 @@ import { Users } from '../models/users';
 import { Roles } from '../models/roles';
 import { BadRequestError } from '../common/errors/bad-request';
 
+const TOKEN_HEADER = 'authorization';
 export interface AuthOptions {
   roles?: Roles.Type[];
 }
 
 export function authenticate(options?: AuthOptions): RequestHandler {
   return handleBasic(async ({ req, res, next }) => {
-    const token = req.headers['x-access-token'];
-    if (!token) {
+    const bearer = req.headers[TOKEN_HEADER];
+    if (!bearer) {
       throw new Error('Token not provided');
     }
-    if (typeof token !== 'string') {
+    if (typeof bearer !== 'string') {
       throw new Error('Token not set in the header');
     }
 
+    const [, token] = bearer.split('Bearer ');
     try {
       const decoded = Jwt.verify(token, SECRET_KEY);
       if (typeof decoded !== 'object') {
