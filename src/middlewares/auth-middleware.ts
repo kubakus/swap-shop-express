@@ -2,13 +2,19 @@ import { RequestHandler } from 'express';
 import { handleBasic } from './handler';
 import Jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { SECRET_KEY } from '../common/config';
-import { Users } from '../models/users';
 import { Roles } from '../models/roles';
 import { BadRequestError } from '../common/errors/bad-request';
 
 const TOKEN_HEADER = 'authorization';
 export interface AuthOptions {
   roles?: Roles.Type[];
+}
+
+export interface TokenPayload {
+  iat: number;
+  sub: string;
+  role: Roles.Type;
+  exp: number;
 }
 
 export function authenticate(options?: AuthOptions): RequestHandler {
@@ -27,8 +33,8 @@ export function authenticate(options?: AuthOptions): RequestHandler {
       if (typeof decoded !== 'object') {
         throw new Error('Failed to decode token');
       }
-      const tokenObject = (decoded as unknown) as Users.Token;
-      res.locals.id = tokenObject.id;
+      const tokenObject = (decoded as unknown) as TokenPayload;
+      res.locals.id = tokenObject.sub;
       res.locals.role = tokenObject.role;
 
       if (options && options.roles) {

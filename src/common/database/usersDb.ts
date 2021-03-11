@@ -25,7 +25,6 @@ type UserResponse = Omit<Users.User, 'password' | 'token'>;
 
 interface TokenResponse {
   token: string;
-  expiresIn: number;
 }
 
 const LOGIN_VALIDATION_RULE: Validator.Rules = {
@@ -123,10 +122,11 @@ export class UsersDb {
       throw new UnauthorizedError('User is not verified');
     }
 
-    const token = Jwt.sign({ id: user._id.toHexString(), role: user.role }, SECRET_KEY, {
+    const token = Jwt.sign({ role: user.role }, SECRET_KEY, {
       expiresIn: TOKEN_TIMEOUT,
+      subject: user._id.toHexString(),
     });
-    return { token, expiresIn: TOKEN_TIMEOUT };
+    return { token };
   }
 
   public async getUserInfo(userId: string): Promise<UserResponse> {

@@ -22,8 +22,4 @@ export namespace Users {
     isVerified: boolean;
     role: Roles.Type.USER;
   }
-
-  export interface Token extends Base.Record {
-    role: Roles.Type;
-  }
 }

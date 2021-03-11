@@ -23,7 +23,7 @@ export const PUBLIC_KEY_EMAIL_CONFIRMATION = 'confirm-email-public';
 export const SECRET_KEY = 'swapshop-secret-key';
 export const PUBLIC_KEY = 'swapshop-public-key';
 // 5min
-export const TOKEN_TIMEOUT = 5 * 60 * 1000;
+export const TOKEN_TIMEOUT = '5m';
 
 // Validator custom rules. Should start with CUSTOM_VALIDATION_RULE for easier usage
 export const CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL = 'custom_date_after_or_equal';

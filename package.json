@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "fix": "eslint --fix --ext .ts src",
-    "mongo:build": "mkdir -p dev/data && docker-compose -f dev/docker-compose.yml up -d",
+    "mongo:build": "mkdir -p dev/data && docker-compose -f dev/docker-compose.yml up -d --remove-orphans",
     "mongo:stop": "docker-compose -f dev/docker-compose.yml down"
   },
   "dependencies": {
