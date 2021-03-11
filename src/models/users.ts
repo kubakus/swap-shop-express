@@ -8,7 +8,7 @@ export namespace Users {
   }
 
   export interface CreateDoc extends CreateRequest {
-    role: Roles.Type.USER;
+    roles: [Roles.Type.USER];
     isVerified: false;
     token: string;
   }
@@ -20,6 +20,6 @@ export namespace Users {
 
   export interface User extends CreateRequest, Base.Record {
     isVerified: boolean;
-    role: Roles.Type.USER;
+    roles: Roles.Type[];
   }
 }
