@@ -35,7 +35,7 @@ const LOGIN_VALIDATION_RULE: Validator.Rules = {
 // TODO add constraints on password
 const REGISTER_VALIDATION_RULE: Validator.Rules = {
   ...LOGIN_VALIDATION_RULE,
-  password: 'required',
+  password: 'required|min:8',
   name: 'required|string',
 };
 export class UsersDb {
@@ -66,7 +66,7 @@ export class UsersDb {
     const doc: Users.CreateDoc = {
       ...request,
       password: await Bcryptjs.hash(request.password, salt),
-      role: Roles.Type.USER,
+      roles: [Roles.Type.USER],
       isVerified: false,
       token: confirmationToken,
     };
@@ -109,20 +109,21 @@ export class UsersDb {
     const user: User | null = await collection.findOne({ email: loginDetails.email });
     // Not sure if server should indicate what went wrong here,
     // safer to throw the same message in both instances
+    // NOTE: UI is checking against that message, if changing, don't forget to change it there as well
     if (!user) {
-      throw new BadRequestError('Either password or email was invalid');
+      throw new BadRequestError('Credentials incorrect');
     }
 
     const isPasswordValid = await Bcryptjs.compare(loginDetails.password, user.password);
     if (!isPasswordValid) {
-      throw new BadRequestError('Either password or email was invalid');
+      throw new BadRequestError('Credentials incorrect');
     }
 
     if (!user.isVerified) {
       throw new UnauthorizedError('User is not verified');
     }
 
-    const token = Jwt.sign({ role: user.role }, SECRET_KEY, {
+    const token = Jwt.sign({ roles: user.roles }, SECRET_KEY, {
       expiresIn: TOKEN_TIMEOUT,
       subject: user._id.toHexString(),
     });

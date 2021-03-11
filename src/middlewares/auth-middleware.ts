@@ -13,7 +13,7 @@ export interface AuthOptions {
 export interface TokenPayload {
   iat: number;
   sub: string;
-  role: Roles.Type;
+  roles: Roles.Type[];
   exp: number;
 }
 
@@ -35,11 +35,11 @@ export function authenticate(options?: AuthOptions): RequestHandler {
       }
       const tokenObject = (decoded as unknown) as TokenPayload;
       res.locals.id = tokenObject.sub;
-      res.locals.role = tokenObject.role;
+      res.locals.role = tokenObject.roles;
 
       if (options && options.roles) {
-        if (!options.roles.includes(tokenObject.role)) {
-          throw new BadRequestError('You do not have permission to access this resource');
+        if (!tokenObject.roles.some((userRole) => options.roles?.includes(userRole))) {
+          throw new BadRequestError('You do not have permissions to access this resource');
         }
       }
     } catch (err) {
