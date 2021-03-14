@@ -1,16 +1,8 @@
 import { Db, ObjectId } from 'mongodb';
 import { Base } from '../../models/base';
 import { Users } from '../../models/users';
-import {
-  COLLECTION_USERS,
-  EMAIL,
-  EMAIL_PASSWORD,
-  SECRET_KEY,
-  TOKEN_TIMEOUT,
-  UI_URL,
-} from '../config';
+import { COLLECTION_USERS, EMAIL, EMAIL_PASSWORD, UI_URL } from '../config';
 import Bcryptjs from 'bcryptjs';
-import Jwt from 'jsonwebtoken';
 import { Roles } from '../../models/roles';
 import Validator from 'validatorjs';
 import { BadRequestError } from '../errors/bad-request';
@@ -18,14 +10,13 @@ import { ConflictError } from '../errors/conflict';
 import { UnauthorizedError } from '../errors/unauthorized';
 import { randomBytes } from 'crypto';
 import { createTransport } from 'nodemailer';
+import { createJwtToken } from '../jwt-utils';
+import { RefreshTokensDb } from './refreshTokensDb';
+import { Tokens } from '../../models/tokens';
 
 type User = Omit<Users.User, 'id'> & { _id: ObjectId };
 // Don't send password back to user or token
 type UserResponse = Omit<Users.User, 'password' | 'token'>;
-
-interface TokenResponse {
-  token: string;
-}
 
 const LOGIN_VALIDATION_RULE: Validator.Rules = {
   email: 'required|email',
@@ -98,7 +89,11 @@ export class UsersDb {
     return { id: result.insertedId };
   }
 
-  public async login(params: unknown): Promise<TokenResponse> {
+  public async login(
+    params: unknown,
+    ipAddress: string,
+    tokenDb: RefreshTokensDb,
+  ): Promise<Tokens.TokenResponse> {
     const validation = new Validator(params, LOGIN_VALIDATION_RULE);
     const isValid = validation.check();
     if (!isValid) {
@@ -122,12 +117,9 @@ export class UsersDb {
     if (!user.isVerified) {
       throw new UnauthorizedError('User is not verified');
     }
-
-    const token = Jwt.sign({ roles: user.roles }, SECRET_KEY, {
-      expiresIn: TOKEN_TIMEOUT,
-      subject: user._id.toHexString(),
-    });
-    return { token };
+    const token = createJwtToken(user._id.toHexString(), user.roles);
+    const refreshToken = await tokenDb.createNewRefreshToken(user._id.toHexString(), ipAddress);
+    return { token, refreshToken };
   }
 
   public async getUserInfo(userId: string): Promise<UserResponse> {

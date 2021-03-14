@@ -15,7 +15,7 @@ export interface RequestArgsBase extends Record<string, unknown> {
 
 export interface RequestArgs extends RequestArgsBase {
   params: Record<string, unknown>;
-  role: Roles.Type;
+  roles: Roles.Type[];
   userId: string;
 }
 
@@ -72,7 +72,7 @@ export function handle(callback: RequestCallback): RequestHandler {
     return {
       db: res.locals.db,
       params: isActionMethod(req) ? req.body : {},
-      role: res.locals.role,
+      roles: res.locals.roles,
       userId: res.locals.id,
     };
   };

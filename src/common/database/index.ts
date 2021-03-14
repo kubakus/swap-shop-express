@@ -4,6 +4,7 @@ import { CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL, DB_NAME, MONGO_URI } from '
 import { BadRequestError } from '../errors/bad-request';
 import { EventsDb } from './eventsDb';
 import { OffersDb } from './offersDb';
+import { RefreshTokensDb } from './refreshTokensDb';
 import { RolesDb } from './rolesDb';
 import { UsersDb } from './usersDb';
 import { WantedDb } from './wantedDb';
@@ -15,6 +16,7 @@ export class Database {
   public readonly offersDb: OffersDb;
   public readonly wantedDb: WantedDb;
   public readonly eventsDb: EventsDb;
+  public readonly refreshTokensDb: RefreshTokensDb;
 
   public static async init(): Promise<Database> {
     this.initValidatorRules();
@@ -31,7 +33,8 @@ export class Database {
     const offersDb = new OffersDb(mongoDb);
     const wantedDb = new WantedDb(mongoDb);
     const eventsDb = new EventsDb(mongoDb);
-    return new Database(mongo, rolesDb, offersDb, usersDb, wantedDb, eventsDb);
+    const refreshTokensDb = new RefreshTokensDb(mongoDb);
+    return new Database(mongo, rolesDb, offersDb, usersDb, wantedDb, eventsDb, refreshTokensDb);
   }
 
   public constructor(
@@ -41,6 +44,7 @@ export class Database {
     usersDb: UsersDb,
     wantedDb: WantedDb,
     eventsDb: EventsDb,
+    refreshTokensDb: RefreshTokensDb,
   ) {
     this.mongo = mongo;
     this.rolesDb = rolesDb;
@@ -48,6 +52,7 @@ export class Database {
     this.offersDb = offersDb;
     this.wantedDb = wantedDb;
     this.eventsDb = eventsDb;
+    this.refreshTokensDb = refreshTokensDb;
   }
 
   public async stop(): Promise<void> {
