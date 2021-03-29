@@ -1,7 +1,14 @@
 import { Db, ObjectId } from 'mongodb';
 import { Base } from '../../models/base';
 import { Users } from '../../models/users';
-import { COLLECTION_USERS, EMAIL, EMAIL_PASSWORD, UI_URL } from '../config';
+import {
+  COLLECTION_USERS,
+  EMAIL,
+  EMAIL_PASSWORD,
+  SECRET_KEY,
+  TOKEN_TIMEOUT,
+  UI_URL,
+} from '../config';
 import Bcryptjs from 'bcryptjs';
 import { Roles } from '../../models/roles';
 import Validator from 'validatorjs';
@@ -34,6 +41,14 @@ export class UsersDb {
 
   public constructor(db: Db) {
     this.db = db;
+  }
+
+  public async getUsers(): Promise<Users.UserBasic[]> {
+    const collection = this.db.collection(COLLECTION_USERS);
+    const cursor = collection.aggregate<Users.UserBasic>(this.createUsersPipeline(), {
+      allowDiskUse: true,
+    });
+    return cursor.toArray();
   }
 
   public async createUser(params: unknown): Promise<Base.CreateResponse> {
@@ -117,7 +132,7 @@ export class UsersDb {
     if (!user.isVerified) {
       throw new UnauthorizedError('User is not verified');
     }
-    const token = createJwtToken(user._id.toHexString(), user.roles);
+    const token = createJwtToken(user._id.toHexString(), user.roles, SECRET_KEY, TOKEN_TIMEOUT);
     const refreshToken = await tokenDb.createNewRefreshToken(user._id.toHexString(), ipAddress);
     return { token, refreshToken };
   }
@@ -159,5 +174,36 @@ export class UsersDb {
         $set: { isVerified: true },
       },
     );
+  }
+
+  public async getUserRoles(userId: string): Promise<Roles.Type[]> {
+    const collection = this.db.collection(COLLECTION_USERS);
+    const result = await collection.findOne<User>({ _id: new ObjectId(userId) });
+    if (!result) {
+      throw new BadRequestError('User does not exist');
+    }
+    return result.roles;
+  }
+
+  public createUsersPipeline(): Record<string, unknown>[] {
+    const pipeline = [];
+
+    pipeline.push(
+      ...[
+        {
+          $addFields: {
+            id: { $convert: { input: '$_id', to: 'string' } },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            password: 0,
+            token: 0,
+          },
+        },
+      ],
+    );
+    return pipeline;
   }
 }

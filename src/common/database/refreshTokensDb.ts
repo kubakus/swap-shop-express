@@ -1,11 +1,17 @@
 import { Db, ObjectId } from 'mongodb';
 import { Roles } from '../../models/roles';
 import { Tokens } from '../../models/tokens';
-import { COLLECTION_REFRESH_TOKENS, REFRESH_TOKEN_TIMEOUT } from '../config';
+import {
+  COLLECTION_REFRESH_TOKENS,
+  REFRESH_TOKEN_TIMEOUT,
+  SECRET_KEY,
+  TOKEN_TIMEOUT,
+} from '../config';
 import { BadRequestError } from '../errors/bad-request';
 import { UnauthorizedError } from '../errors/unauthorized';
 import { createJwtToken } from '../jwt-utils';
 import { getIdProjection } from '../mongo-utils';
+import { UsersDb } from './usersDb';
 
 export class RefreshTokensDb {
   private readonly db: Db;
@@ -75,7 +81,8 @@ export class RefreshTokensDb {
   public async refreshToken(
     id: string,
     ipAddress: string,
-    roles: Roles.Type[],
+    usersDb: UsersDb,
+    roles?: Roles.Type[],
   ): Promise<Tokens.TokenResponse> {
     const collection = this.db.collection(COLLECTION_REFRESH_TOKENS);
     const currentToken = await this.getToken(id);
@@ -95,8 +102,11 @@ export class RefreshTokensDb {
         $set: updateDoc,
       },
     );
-
-    const newJwtToken = createJwtToken(currentToken.userId, roles);
+    // this cannot happen in the router, because for /refresh-token
+    // endpoint db-api does not not who the user is. It needs to first check refresh token
+    // in the db and get user reference from there
+    const userRoles = roles || (await usersDb.getUserRoles(currentToken.userId));
+    const newJwtToken = createJwtToken(currentToken.userId, userRoles, SECRET_KEY, TOKEN_TIMEOUT);
 
     return { refreshToken: newRefreshTokenId, token: newJwtToken };
   }

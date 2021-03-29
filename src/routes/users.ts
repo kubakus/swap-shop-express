@@ -1,13 +1,24 @@
 import { Router } from 'express';
-import { handle } from '../middlewares/handler';
+import { handle, handleBasic } from '../middlewares/handler';
 import { authenticate } from '../middlewares/auth-middleware';
 import { UI_URL } from '../common/config';
 import { checkRefreshToken, getRefreshCookieOptions } from '../common/express-utils';
+import { Roles } from '../models/roles';
 
 const REFRESH_TOKEN_NAME = 'refreshToken';
 export class UsersRouter {
   public static async init(): Promise<Router> {
     const router = Router();
+
+    router.get(
+      '/',
+      authenticate({ roles: [Roles.Type.ADMIN] }),
+      handle(async ({ res, db }) => {
+        const users = await db.usersDb.getUsers();
+        res.send(users);
+      }),
+    );
+
     router.post(
       '/register',
       handle(async ({ res, db, params }) => {
@@ -26,10 +37,10 @@ export class UsersRouter {
 
     router.post(
       '/refresh-token',
-      handle(async ({ res, db, req, roles }) => {
+      handleBasic(async ({ res, db, req }) => {
         const token = req.cookies[REFRESH_TOKEN_NAME];
         checkRefreshToken(token);
-        const result = await db.refreshTokensDb.refreshToken(token, req.ip, roles);
+        const result = await db.refreshTokensDb.refreshToken(token, req.ip, db.usersDb);
         res.cookie(REFRESH_TOKEN_NAME, result.refreshToken, getRefreshCookieOptions());
         res.send({ token: result.token });
       }),

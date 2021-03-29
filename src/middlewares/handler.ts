@@ -31,6 +31,11 @@ type ExtractFunction<T extends RequestArgsBase = RequestArgsBase> = (
   next: NextFunction,
 ) => T;
 
+/**
+ * Handle should only be used after authenticate endpoint - that's where roles and userId fields get populated
+ * @param callback
+ * @param extractFunction
+ */
 export function handler<T extends RequestArgsBase>(
   callback: BaseRequestCallback<T>,
   extractFunction: ExtractFunction<T>,
@@ -71,7 +76,8 @@ export function handle(callback: RequestCallback): RequestHandler {
   const extractor: ExtractFunction<RequestArgs> = (req, res) => {
     return {
       db: res.locals.db,
-      params: isActionMethod(req) ? req.body : {},
+      // TODO makes sure that all it takes
+      params: isActionMethod(req) ? req.body : req.query,
       roles: res.locals.roles,
       userId: res.locals.id,
     };

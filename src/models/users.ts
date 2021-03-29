@@ -22,4 +22,10 @@ export namespace Users {
     isVerified: boolean;
     roles: Roles.Type[];
   }
+
+  export interface UserBasic extends Base.Record {
+    email: string;
+    roles: Roles.Type[];
+    isVerified: boolean;
+  }
 }

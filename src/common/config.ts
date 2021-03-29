@@ -23,8 +23,8 @@ export const SECRET_KEY_EMAIL_CONFIRMATION = 'confirm-email-secret';
 export const PUBLIC_KEY_EMAIL_CONFIRMATION = 'confirm-email-public';
 export const SECRET_KEY = 'swapshop-secret-key';
 export const PUBLIC_KEY = 'swapshop-public-key';
-// 5min
-export const TOKEN_TIMEOUT = '5m';
+// 5 min in seconds
+export const TOKEN_TIMEOUT = 5 * 60;
 // 1 day in milisecond
 export const REFRESH_TOKEN_TIMEOUT = 1 * 24 * 60 * 60 * 1000;
 

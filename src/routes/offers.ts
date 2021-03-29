@@ -9,9 +9,27 @@ export class OffersRouter {
     router.post(
       '/',
       authenticate({ roles: [Roles.Type.USER] }),
-      handle(async ({ res, params, db }) => {
-        const result = await db.offersDb.createOffer(params);
+      handle(async ({ res, params, db, userId }) => {
+        const result = await db.offersDb.createOffer(params, userId);
         res.status(201).send(result);
+      }),
+    );
+
+    router.get(
+      '/',
+      authenticate({ roles: [Roles.Type.ADMIN] }),
+      handle(async ({ res, db, params }) => {
+        const result = await db.offersDb.getOffers(params);
+        res.send(result);
+      }),
+    );
+
+    router.patch(
+      '/',
+      authenticate({ roles: [Roles.Type.ADMIN] }),
+      handle(async ({ res, params, db }) => {
+        const result = await db.offersDb.changeState(params);
+        res.send(result);
       }),
     );
     return router;

@@ -71,12 +71,13 @@ export class Database {
       const valueDate = new Date(value).getTime();
       const requirementDate = new Date(requirement).getTime();
       if (requirementDate <= valueDate) {
+        value = new Date(value).toISOString();
         return true;
       }
       throw new BadRequestError(
         `Date must be after or equal to: ${new Date(
           requirementDate,
-        ).toUTCString()}, current value: ${new Date(valueDate).toUTCString()}`,
+        ).toISOString()}, current value: ${new Date(valueDate).toISOString()}`,
       );
     };
     Validator.register(CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL, dateAfterOrEqualCallback);
