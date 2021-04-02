@@ -5,6 +5,7 @@ import { Database } from './common/database';
 import { ApiRouter } from './routes';
 import BodyParser from 'body-parser';
 import CookieParser from 'cookie-parser';
+import { EmailDispatcher } from './common/email-dispatcher';
 
 function errorCatch(error: any) {
   console.error(error);
@@ -43,6 +44,7 @@ class NodeServer {
   private server: Server;
 
   private database?: Database;
+  private emailDispatcher?: EmailDispatcher;
 
   private port?: number | string;
 
@@ -58,9 +60,12 @@ class NodeServer {
     this.express.use(CookieParser());
 
     this.database = await Database.init();
+    this.emailDispatcher = new EmailDispatcher();
+
     // Pass db as a locals
     this.express.use((_req, res, next) => {
       res.locals.db = this.database;
+      res.locals.emailDispatcher = this.emailDispatcher;
       next();
     });
 

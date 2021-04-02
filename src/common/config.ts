@@ -1,4 +1,4 @@
-import { getEnvVar } from './env-utils';
+import { getEnvVar, getOptionalEnvVar } from './env-utils';
 export const DB_NAME = 'swapshop';
 
 // MongoDb collections' names;
@@ -8,14 +8,17 @@ export const COLLECTION_OFFERS = 'offers';
 export const COLLECTION_WANTED = 'wanted';
 export const COLLECTION_EVENTS = 'events';
 export const COLLECTION_REFRESH_TOKENS = 'refresh-tokens';
+export const COLLECTION_SUBSCRIPTIONS = 'subscriptions';
 
 // Env Variables
 export const MONGO_URI = getEnvVar('MONGO_URI');
 export const UI_URL = getEnvVar('UI_URL');
 // export const DB_API_URL = getEnvVar('DB_API_URL');
 
+// TODO change them all to optional
 export const EMAIL = getEnvVar('SWAPSHOP_EMAIL');
 export const EMAIL_PASSWORD = getEnvVar('SWAPSHOP_EMAIL_PASSWORD');
+export const EMAIL_SERVICE = getOptionalEnvVar('SWAPSHOP_EMAIL_SERVICE');
 
 // TODO these should be stored in files and paths to those files should be
 // stored as env vars.

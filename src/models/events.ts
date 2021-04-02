@@ -13,7 +13,7 @@ export namespace Events {
     state: ItemState;
   }
 
-  export interface Request {
+  export interface Request extends Base.GetWithAuditInfo {
     eventName?: Filters.StringFilter;
     contactInfo?: Filters.StringFilter;
     state?: Filters.StringFilter;

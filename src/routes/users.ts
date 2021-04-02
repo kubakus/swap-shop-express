@@ -13,8 +13,8 @@ export class UsersRouter {
     router.get(
       '/',
       authenticate({ roles: [Roles.Type.ADMIN] }),
-      handle(async ({ res, db }) => {
-        const users = await db.usersDb.getUsers();
+      handle(async ({ res, db, params }) => {
+        const users = await db.usersDb.getUsers(params);
         res.send(users);
       }),
     );

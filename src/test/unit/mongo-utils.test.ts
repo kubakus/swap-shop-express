@@ -4,21 +4,46 @@ import { describe, test, expect } from '@jest/globals';
 
 describe('Mongo utils test', () => {
   describe('Create match filter', () => {
+    test('Filter without value', () => {
+      const request: Offers.Request = {};
+      const expectedResult = {};
+
+      const result = createMatchFilter<Offers.Request>(
+        [
+          { name: 'userName', type: 'string' },
+          { name: 'email', type: 'string' },
+        ],
+        request,
+      );
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
     test('Filter is correctly created', () => {
       const request: Offers.Request = {
         state: ['AwaitingReview'],
-        name: ['Phone', 'case'],
+        itemName: ['Phone', 'case'],
+        createdDate: { after: new Date(), before: new Date() },
       };
 
       const expectedResult = {
-        state: { $in: request.state },
-        name: { $in: request.name },
+        $and: [
+          { state: { $in: request.state } },
+          { itemName: { $in: request.itemName } },
+          {
+            $and: [
+              { createdDate: { $lt: request.createdDate?.after } },
+              { createdDate: { $gt: request.createdDate?.before } },
+            ],
+          },
+        ],
       };
 
       const filter = createMatchFilter<Offers.Request>(
         [
           { name: 'state', type: 'string' },
-          { name: 'name', type: 'string' },
+          { name: 'itemName', type: 'string' },
+          { name: 'createdDate', type: 'date' },
         ],
         request,
       );
@@ -29,7 +54,7 @@ describe('Mongo utils test', () => {
     test('Filters are created only for desired values', () => {
       const request: Offers.Request = {
         state: ['AwaitingReview'],
-        name: ['Phone', 'case'],
+        userName: ['Phone', 'case'],
       };
 
       const expectedResult = {
@@ -40,17 +65,8 @@ describe('Mongo utils test', () => {
         [{ name: 'state', type: 'string' }],
         request,
       );
+
       expect(filter).toStrictEqual(expectedResult);
-    });
-
-    test('Throws errors for not implemented filters', () => {
-      const request: Offers.Request = {
-        state: ['AwaitingReview'],
-      };
-
-      expect(() =>
-        createMatchFilter<Offers.Request>([{ name: 'state', type: 'id' }], request),
-      ).toThrowError('Not supported filter type');
     });
   });
 });

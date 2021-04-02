@@ -4,9 +4,9 @@ import { ItemState } from './item-state';
 
 export namespace Offers {
   export interface CreateRequest {
-    name: string;
+    userName: string;
     info: string;
-    item: string;
+    itemName: string;
     deal: string;
     email: string;
   }
@@ -15,9 +15,9 @@ export namespace Offers {
     state: ItemState;
   }
 
-  export interface Request {
-    name?: Filters.StringFilter;
-    item?: Filters.StringFilter;
+  export interface Request extends Base.GetWithAuditInfo {
+    userName?: Filters.StringFilter;
+    itemName?: Filters.StringFilter;
     email?: Filters.StringFilter;
     state?: Filters.StringFilter;
   }

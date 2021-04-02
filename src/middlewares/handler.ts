@@ -2,6 +2,7 @@ import { Response, Request, NextFunction, RequestHandler } from 'express';
 import { Roles } from '../models/roles';
 import { Database } from '../common/database';
 import { BaseError } from '../common/errors/base-error';
+import { EmailDispatcher } from '../common/email-dispatcher';
 
 export interface ExpressOptions {
   req: Request;
@@ -17,6 +18,7 @@ export interface RequestArgs extends RequestArgsBase {
   params: Record<string, unknown>;
   roles: Roles.Type[];
   userId: string;
+  emailDispatcher: EmailDispatcher;
 }
 
 export type RequestCallback = (options: ExpressOptions & RequestArgs) => Promise<void>;
@@ -80,6 +82,7 @@ export function handle(callback: RequestCallback): RequestHandler {
       params: isActionMethod(req) ? req.body : req.query,
       roles: res.locals.roles,
       userId: res.locals.id,
+      emailDispatcher: res.locals.emailDispatcher,
     };
   };
 

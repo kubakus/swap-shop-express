@@ -1,15 +1,21 @@
 import { Db, ObjectId } from 'mongodb';
 import Validator from 'validatorjs';
 import { Base } from '../../models/base';
+import { AUDIT_FILTERS } from '../../models/filters';
 import { Offers } from '../../models/offers';
 import { COLLECTION_OFFERS } from '../config';
 import { BadRequestError } from '../errors/bad-request';
-import { createMatchFilter, createStateInsertWrapper, createTrimmer } from '../mongo-utils';
+import {
+  createMatchFilter,
+  createStateInsertWrapper,
+  createTrimmer,
+  createUpdateWrapper,
+} from '../mongo-utils';
 
 const CREATE_OFFER_VALIDATION_RULE: Validator.Rules = {
-  name: 'required|string',
+  userName: 'required|string',
   info: 'required|string|max:300',
-  item: 'required|string|max:50',
+  itemName: 'required|string|max:50',
   deal: 'required|string|max:100',
   email: 'required|email',
 };
@@ -46,7 +52,7 @@ export class OffersDb {
     return { id: result.insertedId };
   }
 
-  public async changeState(params: unknown): Promise<Base.MatchedCountResponse> {
+  public async changeState(params: unknown, userId: string): Promise<Base.MatchedCountResponse> {
     const request = params as Offers.ChangeStateRequest;
     const collection = this.db.collection(COLLECTION_OFFERS);
     const result = await collection.updateMany(
@@ -54,7 +60,7 @@ export class OffersDb {
         _id: { $in: [...request.ids.map((id) => new ObjectId(id))] },
       },
       {
-        $set: { state: request.transition },
+        $set: createUpdateWrapper({ state: request.transition }, userId),
       },
     );
 
@@ -62,6 +68,15 @@ export class OffersDb {
       throw new Error('Failed to change state');
     }
     return { count: request.ids.length, matchedCount: result.modifiedCount };
+  }
+
+  public async deleteOffered(query: Record<string, unknown>): Promise<number> {
+    const collection = this.db.collection(COLLECTION_OFFERS);
+    const result = await collection.deleteMany(query);
+    if (!result.result.ok) {
+      throw new Error('Failed to delete offered');
+    }
+    return result.deletedCount || 0;
   }
 
   // Currently only admins should be able to get offers
@@ -75,10 +90,11 @@ export class OffersDb {
         {
           $match: createMatchFilter<Offers.Request>(
             [
-              { name: 'name', type: 'string' },
+              { name: 'userName', type: 'string' },
               { name: 'email', type: 'string' },
-              { name: 'item', type: 'string' },
+              { name: 'itemName', type: 'string' },
               { name: 'state', type: 'string' },
+              ...AUDIT_FILTERS,
             ],
             options,
           ),

@@ -6,10 +6,15 @@ export namespace Base {
   }
 
   export interface Get {
-    id?: Filters.StringFilter;
+    id?: Filters.IdFilter;
   }
 
-  export interface AuditInfo {
+  export interface UpdateRequest {
+    updatedBy: string;
+    updatedDate: Date;
+  }
+
+  export interface AuditInfo extends UpdateRequest {
     createdBy: string;
     createdDate: Date;
   }
@@ -21,5 +26,12 @@ export namespace Base {
   export interface MatchedCountResponse {
     count: number;
     matchedCount: number;
+  }
+
+  export interface GetWithAuditInfo extends Get {
+    createdDate?: Filters.DateFilter;
+    updatedDate?: Filters.DateFilter;
+    createdBy?: Filters.IdFilter;
+    updatedBy?: Filters.IdFilter;
   }
 }

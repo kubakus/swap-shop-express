@@ -27,8 +27,8 @@ export class EventsRouter {
     router.patch(
       '/',
       authenticate({ roles: [Roles.Type.ADMIN] }),
-      handle(async ({ res, params, db }) => {
-        const result = await db.eventsDb.changeState(params);
+      handle(async ({ res, params, db, userId }) => {
+        const result = await db.eventsDb.changeState(params, userId);
         res.send(result);
       }),
     );

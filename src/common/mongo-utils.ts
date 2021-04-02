@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { Base } from '../models/base';
 import { Filters } from '../models/filters';
 import { ItemState, States } from '../models/item-state';
@@ -9,13 +10,6 @@ export function getIdProjection(): Record<string, unknown> {
     _id: 0,
   };
 }
-export function createInsertWrapper<T>(params: T, userId: string): T & Base.AuditInfo {
-  return {
-    ...params,
-    createdBy: userId,
-    createdDate: new Date(),
-  };
-}
 
 export function createStateInsertWrapper<T>(
   params: T,
@@ -24,6 +18,25 @@ export function createStateInsertWrapper<T>(
   return {
     ...createInsertWrapper(params, userId),
     state: ItemState.AWAITING_REVIEW,
+  };
+}
+
+export function createInsertWrapper<T>(params: T, userId: string): T & Base.AuditInfo {
+  return {
+    ...params,
+    createdBy: userId,
+    createdDate: new Date(),
+    updatedBy: userId,
+    updatedDate: new Date(),
+  };
+}
+
+// TODo updatedBy created By should be a mongoid
+export function createUpdateWrapper<T>(params: T, userId: string): T & Base.UpdateRequest {
+  return {
+    ...params,
+    updatedBy: userId,
+    updatedDate: new Date(),
   };
 }
 
@@ -45,31 +58,82 @@ export function createTrimmer(): Record<string, unknown>[] {
 export function createMatchFilter<T>(
   fieldsToMatch: Filters.Fields<T>[],
   options: Filters.Request<T>,
-): Filters.Matcher<T> {
-  const matcher: Filters.Matcher<T> = {};
-  for (const field of fieldsToMatch) {
+): Record<string, unknown> {
+  const pipeline = [];
+  const fields = fieldsToMatch.filter((fieldToMatch) => options[fieldToMatch.name]);
+  for (const field of fields) {
     const filter = options[field.name];
-    if (filter === undefined) {
-      continue;
-    }
-
     switch (field.type) {
       case 'string':
-        // unfortunately Typings do not work here and compiler still things
-        // filter can be undefined here despite the check above
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        matcher[field.matchName || field.name] = createStringFilter(filter!);
+        pipeline.push(
+          createStringFilter(field.matchName || field.name, filter as Filters.StringFilter),
+        );
+        break;
+      case 'date':
+        pipeline.push(
+          createDateFilter(field.matchName || field.name, filter as Filters.DateFilter),
+        );
+        break;
+      case 'id':
+        pipeline.push(createIdFilter(field.matchName || field.name, filter as Filters.IdFilter));
+        break;
+      case 'boolean':
+        pipeline.push(
+          createBooleanFilter(field.matchName || field.name, filter as Filters.BooleanFilter),
+        );
         break;
       default:
         throw new BadRequestError('Not supported filter type', field.type);
     }
   }
 
-  return matcher;
+  return createFilter(pipeline);
 }
 
-export function createStringFilter(filter: Filters.StringFilter): Record<string, unknown> {
+export function createStringFilter<T>(
+  key: keyof T | string,
+  filter: Filters.StringFilter,
+): Record<string, unknown> {
   const values = Array.isArray(filter) ? filter : [filter];
 
-  return { $in: values };
+  return { [key]: { $in: values } };
+}
+
+export function createBooleanFilter<T>(
+  key: keyof T | string,
+  filter: Filters.BooleanFilter,
+): Record<string, unknown> {
+  return { [key]: { $eq: filter } };
+}
+
+export function createIdFilter<T>(
+  key: keyof T | string,
+  filter: Filters.IdFilter,
+): Record<string, unknown> {
+  const values = Array.isArray(filter) ? filter : [filter];
+  return { [key === 'id' ? '_id' : key]: { $in: values.map((v) => new ObjectId(v)) } };
+}
+
+export function createDateFilter<T>(
+  key: keyof T | string,
+  filter: Filters.DateFilter,
+): Record<string, unknown> {
+  const base: Record<string, unknown>[] = [];
+  if (filter.before !== undefined) {
+    base.push({ [key]: { $lt: filter.before } });
+  }
+
+  if (filter.after !== undefined) {
+    base.push({ [key]: { $gt: filter.after } });
+  }
+  return createFilter(base);
+}
+
+export function createFilter(pipeline: Record<string, unknown>[]): Record<string, unknown> {
+  const filtered = pipeline.filter((stage) => Object.keys(stage).length > 0);
+  if (filtered.length > 1) {
+    return { ['$and']: filtered };
+  } else {
+    return filtered[0] || {};
+  }
 }

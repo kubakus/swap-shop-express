@@ -27,8 +27,8 @@ export class OffersRouter {
     router.patch(
       '/',
       authenticate({ roles: [Roles.Type.ADMIN] }),
-      handle(async ({ res, params, db }) => {
-        const result = await db.offersDb.changeState(params);
+      handle(async ({ res, params, db, userId }) => {
+        const result = await db.offersDb.changeState(params, userId);
         res.send(result);
       }),
     );

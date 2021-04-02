@@ -1,4 +1,5 @@
 import { Base } from './base';
+import { Filters } from './filters';
 import { Roles } from './roles';
 
 export namespace Users {
@@ -23,9 +24,16 @@ export namespace Users {
     roles: Roles.Type[];
   }
 
-  export interface UserBasic extends Base.Record {
+  export interface UserBasic extends Base.Record, Base.AuditInfo {
     email: string;
     roles: Roles.Type[];
     isVerified: boolean;
+  }
+
+  // TODO isVerified filter
+  export interface Request extends Base.GetWithAuditInfo {
+    email?: Filters.StringFilter;
+    roles?: Filters.StringFilter;
+    isVerified?: Filters.BooleanFilter;
   }
 }

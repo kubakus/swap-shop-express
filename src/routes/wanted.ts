@@ -28,8 +28,8 @@ export class WantedRouter {
     router.patch(
       '/',
       authenticate({ roles: [Roles.Type.ADMIN] }),
-      handle(async ({ res, params, db }) => {
-        const result = await db.wantedDb.changeState(params);
+      handle(async ({ res, params, db, userId }) => {
+        const result = await db.wantedDb.changeState(params, userId);
         res.send(result);
       }),
     );

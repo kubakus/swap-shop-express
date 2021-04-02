@@ -20,6 +20,8 @@ import { createTransport } from 'nodemailer';
 import { createJwtToken } from '../jwt-utils';
 import { RefreshTokensDb } from './refreshTokensDb';
 import { Tokens } from '../../models/tokens';
+import { createMatchFilter, createTrimmer } from '../mongo-utils';
+import { AUDIT_FILTERS } from '../../models/filters';
 
 type User = Omit<Users.User, 'id'> & { _id: ObjectId };
 // Don't send password back to user or token
@@ -43,9 +45,10 @@ export class UsersDb {
     this.db = db;
   }
 
-  public async getUsers(): Promise<Users.UserBasic[]> {
+  public async getUsers(params: unknown): Promise<Users.UserBasic[]> {
     const collection = this.db.collection(COLLECTION_USERS);
-    const cursor = collection.aggregate<Users.UserBasic>(this.createUsersPipeline(), {
+    const request = params as Users.Request;
+    const cursor = collection.aggregate<Users.UserBasic>(this.createUsersPipeline(request), {
       allowDiskUse: true,
     });
     return cursor.toArray();
@@ -185,24 +188,32 @@ export class UsersDb {
     return result.roles;
   }
 
-  public createUsersPipeline(): Record<string, unknown>[] {
+  public createUsersPipeline(options: Users.Request): Record<string, unknown>[] {
     const pipeline = [];
 
     pipeline.push(
       ...[
         {
-          $addFields: {
-            id: { $convert: { input: '$_id', to: 'string' } },
-          },
+          $match: createMatchFilter<Users.Request>(
+            [
+              { name: 'email', type: 'string' },
+              {
+                name: 'roles',
+                type: 'string',
+              },
+              ...AUDIT_FILTERS,
+            ],
+            options,
+          ),
         },
         {
           $project: {
-            _id: 0,
             password: 0,
             token: 0,
           },
         },
       ],
+      ...createTrimmer(),
     );
     return pipeline;
   }
