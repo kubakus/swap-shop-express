@@ -26,6 +26,7 @@ export function authenticate(options?: AuthOptions): RequestHandler {
 
     try {
       const tokenObject = verifyJwtToken(token, SECRET_KEY);
+
       res.locals.id = tokenObject.sub;
       // Don't trust the token with roles, fetch them directly from the database.
       // Not sure if this is correct
@@ -41,7 +42,7 @@ export function authenticate(options?: AuthOptions): RequestHandler {
       if (err instanceof TokenExpiredError) {
         throw new UnauthorizedError('Token expired!');
       } else {
-        throw new UnauthorizedError('Invalid token!');
+        throw new UnauthorizedError('Invalid token!', err.errorObject);
       }
     }
     next();

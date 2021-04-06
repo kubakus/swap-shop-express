@@ -12,12 +12,12 @@ export const COLLECTION_SUBSCRIPTIONS = 'subscriptions';
 
 // Env Variables
 export const MONGO_URI = getEnvVar('MONGO_URI');
-export const UI_URL = getEnvVar('UI_URL');
+export const UI_URL = getOptionalEnvVar('UI_URL');
 // export const DB_API_URL = getEnvVar('DB_API_URL');
 
 // TODO change them all to optional
-export const EMAIL = getEnvVar('SWAPSHOP_EMAIL');
-export const EMAIL_PASSWORD = getEnvVar('SWAPSHOP_EMAIL_PASSWORD');
+export const EMAIL = getOptionalEnvVar('SWAPSHOP_EMAIL');
+export const EMAIL_PASSWORD = getOptionalEnvVar('SWAPSHOP_EMAIL_PASSWORD');
 export const EMAIL_SERVICE = getOptionalEnvVar('SWAPSHOP_EMAIL_SERVICE');
 
 // TODO these should be stored in files and paths to those files should be

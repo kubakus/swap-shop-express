@@ -69,9 +69,15 @@ export class UsersRouter {
     router.get(
       '/confirm/:confirmationCode',
       handle(async ({ req, res, db }) => {
+        const uiUrl = UI_URL;
+        if (!uiUrl) {
+          res.sendStatus(500);
+          return;
+        }
         await db.usersDb.confirmUser(req.params.confirmationCode);
+
         // should include env var
-        res.redirect(UI_URL);
+        res.redirect(uiUrl);
       }),
     );
     return router;

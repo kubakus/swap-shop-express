@@ -1,0 +1,9 @@
+version: '2'
+services:
+  mongo:
+    image: mongo:4.4
+    command: ["mongod"]
+    ports:
+      - "27018:27017"
+    mem_limit: 1024m
+    tmpfs: "/data/db"

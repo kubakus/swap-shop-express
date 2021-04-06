@@ -55,6 +55,11 @@ export class UsersDb {
   }
 
   public async createUser(params: unknown): Promise<Base.CreateResponse> {
+    const url = UI_URL;
+    if (!url) {
+      throw new Error('Missing UI URL. Creation of new users disabled');
+    }
+
     const validation = new Validator(params, REGISTER_VALIDATION_RULE);
     const isValid = validation.check();
     if (!isValid) {
@@ -100,7 +105,7 @@ export class UsersDb {
       html: `<h1>Email Confirmation</h1>
                 <h2>Hello ${request.name}</h2>
                 <p>Thank you for registering with SwapShop! Please confirm your email by clicking the link below. It will redirect you to login page</p>
-                <a href=${UI_URL}/api/auth/confirm/${confirmationToken}>Click here to confirm your email</a>
+                <a href=${url}/api/auth/confirm/${confirmationToken}>Click here to confirm your email</a>
                 </div>`,
     });
 
