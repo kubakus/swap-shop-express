@@ -9,7 +9,7 @@ pipelines:
   default:
        - step:
            name: Build and Test
-           image: node:14.16.1-alpine
+#           image: node:14.16.1-alpine
            services: [docker]
            script:
               - curl -L "https://github.com/docker/compose/releases/download/1.29.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
