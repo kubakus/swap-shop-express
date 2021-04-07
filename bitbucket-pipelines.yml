@@ -3,12 +3,24 @@
 #  This template allows you to validate your NodeJS code.
 #  The workflow allows running tests and code linting on the default branch.
 
-image: node:14.16.1-alpine
+
 
 pipelines:
   default:
        - step:
+           name: Install docker-compose
+           image: python:3.8.1
+           services:
+              - docker
+           caches:
+              - docker
+              - pip
+        script:
+            - pip install docker-compose
+            
+       - step:
            name: Build and Test
+           image: node:14.16.1-alpine
            services: [docker]
            script:
               - yarn
@@ -16,3 +28,7 @@ pipelines:
               - yarn fix
               - yarn test
  
+definitions:
+  services:
+    docker:
+      memory: 3072
