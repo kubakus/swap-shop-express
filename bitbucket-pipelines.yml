@@ -15,8 +15,8 @@ pipelines:
            caches:
               - docker
               - pip
-        script:
-            - pip install docker-compose
+           script:
+              - pip install docker-compose
             
        - step:
            name: Build and Test
