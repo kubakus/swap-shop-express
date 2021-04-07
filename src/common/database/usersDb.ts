@@ -1,14 +1,7 @@
 import { Db, ObjectId } from 'mongodb';
 import { Base } from '../../models/base';
 import { Users } from '../../models/users';
-import {
-  COLLECTION_USERS,
-  EMAIL,
-  EMAIL_PASSWORD,
-  SECRET_KEY,
-  TOKEN_TIMEOUT,
-  UI_URL,
-} from '../config';
+import { COLLECTION_USERS, SECRET_KEY, TOKEN_TIMEOUT, UI_URL } from '../config';
 import Bcryptjs from 'bcryptjs';
 import { Roles } from '../../models/roles';
 import Validator from 'validatorjs';
@@ -16,12 +9,12 @@ import { BadRequestError } from '../errors/bad-request';
 import { ConflictError } from '../errors/conflict';
 import { UnauthorizedError } from '../errors/unauthorized';
 import { randomBytes } from 'crypto';
-import { createTransport } from 'nodemailer';
 import { createJwtToken } from '../jwt-utils';
 import { RefreshTokensDb } from './refreshTokensDb';
 import { Tokens } from '../../models/tokens';
 import { createMatchFilter, createTrimmer } from '../mongo-utils';
 import { AUDIT_FILTERS } from '../../models/filters';
+import { EmailDispatcher } from '../email-dispatcher';
 
 type User = Omit<Users.User, 'id'> & { _id: ObjectId };
 // Don't send password back to user or token
@@ -54,7 +47,10 @@ export class UsersDb {
     return cursor.toArray();
   }
 
-  public async createUser(params: unknown): Promise<Base.CreateResponse> {
+  public async createUser(
+    params: unknown,
+    emailDispatcher: EmailDispatcher,
+  ): Promise<Base.CreateResponse> {
     const url = UI_URL;
     if (!url) {
       throw new Error('Missing UI URL. Creation of new users disabled');
@@ -90,24 +86,7 @@ export class UsersDb {
       throw new Error('Failed to insert new role');
     }
 
-    const transport = createTransport({
-      service: 'Gmail',
-      auth: {
-        user: EMAIL,
-        pass: EMAIL_PASSWORD,
-      },
-    });
-
-    await transport.sendMail({
-      from: EMAIL,
-      to: request.email,
-      subject: 'Email confirmation',
-      html: `<h1>Email Confirmation</h1>
-                <h2>Hello ${request.name}</h2>
-                <p>Thank you for registering with SwapShop! Please confirm your email by clicking the link below. It will redirect you to login page</p>
-                <a href=${url}/api/auth/confirm/${confirmationToken}>Click here to confirm your email</a>
-                </div>`,
-    });
+    await emailDispatcher.createConfirmEmail(request.email, request.name, confirmationToken, url);
 
     return { id: result.insertedId };
   }

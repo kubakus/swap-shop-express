@@ -30,6 +30,36 @@ export class EmailDispatcher {
     return this.timeoutReference;
   }
 
+  public async createConfirmEmail(
+    userEmail: string,
+    userName: string,
+    confirmationToken: string,
+    uiUrl: string,
+  ): Promise<void> {
+    if (!EMAIL_SETTINGS) {
+      throw new Error('Missing email settings. Email dispatcher disabled');
+    }
+
+    const transport = createTransport({
+      service: EMAIL_SETTINGS.service,
+      auth: {
+        user: EMAIL_SETTINGS.address,
+        pass: EMAIL_SETTINGS.password,
+      },
+    });
+
+    await transport.sendMail({
+      from: EMAIL_SETTINGS.address,
+      to: userEmail,
+      subject: 'Email confirmation',
+      html: `<h1>Email Confirmation</h1>
+                <h2>Hello ${userName}</h2>
+                <p>Thank you for registering with SwapShop! Please confirm your email by clicking the link below. It will redirect you to login page</p>
+                <a href=${uiUrl}/api/auth/confirm/${confirmationToken}>Click here to confirm your email</a>
+                </div>`,
+    });
+  }
+
   public async createDispatchTimeout(db: Database, subscriptionId: string): Promise<void> {
     if (!EMAIL_SETTINGS) {
       throw new Error('Missing email settings. Email dispatcher disabled');
@@ -72,6 +102,13 @@ export class EmailDispatcher {
           .catch((err) => console.error(err));
       });
     }, timeout);
+  }
+
+  public stopTimeout(): void {
+    if (this.timeoutReference) {
+      clearTimeout(this.timeoutReference);
+      this.timeoutReference = undefined;
+    }
   }
 
   private async dispatch(db: Database, subscription: Subscriptions.Subscription): Promise<void> {
@@ -161,13 +198,6 @@ export class EmailDispatcher {
 
     if (result.length) {
       console.warn('Failed to delete some of the items', result);
-    }
-  }
-
-  public stopTimeout(): void {
-    if (this.timeoutReference) {
-      clearTimeout(this.timeoutReference);
-      this.timeoutReference = undefined;
     }
   }
 
