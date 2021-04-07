@@ -205,6 +205,7 @@ export class EmailDispatcher {
       Event: ${item.eventName}${breakOfEmpty}
       Info: ${item.info}${breakOfEmpty}
       When: ${item.when.toLocaleString()}${breakOfEmpty}
+      E-Mail: ${item.email}${breakOfEmpty}
       Contact: ${item.contactInfo}${breakOfEmpty}
       `;
     };
