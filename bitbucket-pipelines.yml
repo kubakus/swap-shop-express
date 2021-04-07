@@ -4,7 +4,8 @@
 #  The workflow allows running tests and code linting on the default branch.
 
 
-image: node:14.16.1#-alpine
+#image: node:14.16.1-alpine
+image: node:14.16.1
 pipelines:
   default:
        - step:
