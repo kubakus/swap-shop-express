@@ -10,6 +10,7 @@ pipelines:
        - step:
            name: Build and Test
            script:
+              - yarn
               - yarn build
               - yarn fix
               - yarn test
