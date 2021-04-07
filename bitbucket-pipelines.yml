@@ -4,20 +4,9 @@
 #  The workflow allows running tests and code linting on the default branch.
 
 
-
+image: atlassian/default-image:2
 pipelines:
   default:
-       - step:
-           name: Install docker-compose
-           image: python:3.8.1
-           services:
-              - docker
-           caches:
-              - docker
-              - pip
-           script:
-              - pip install docker-compose
-            
        - step:
            name: Build and Test
            image: node:14.16.1-alpine
