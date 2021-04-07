@@ -49,6 +49,7 @@ describe('Events database testing', () => {
         state: ItemState.AWAITING_REVIEW,
         createdBy: 'fake user id',
         updatedBy: 'fake user id',
+        email: `fake${i}@email.com`,
       });
     }
     await db.collection(COLLECTION_EVENTS).insertMany(events);
@@ -66,6 +67,7 @@ describe('Events database testing', () => {
       const time = 1000 * 60 * 60 * 24 * 8;
       const request: Events.CreateRequest = {
         eventName: 'event name',
+        email: 'fake@email.com',
         when: new Date(Date.now() + time),
         info: 'info',
         contactInfo: 'contact info',
@@ -91,6 +93,7 @@ describe('Events database testing', () => {
     test('Event is rejected with date to soon (400)', async () => {
       const request: Events.CreateRequest = {
         eventName: 'event name 2',
+        email: 'fake2@email.com',
         when: new Date(),
         info: 'info',
         contactInfo: 'contact info',
@@ -132,6 +135,7 @@ describe('Events database testing', () => {
     test('Admin can fetch events', async () => {
       const expected: EventWithoutAuditDates = {
         id: events[0]._id.toHexString(),
+        email: events[0].email,
         contactInfo: events[0].contactInfo,
         createdBy: events[0].createdBy,
         updatedBy: events[0].updatedBy,

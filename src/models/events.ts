@@ -8,6 +8,7 @@ export namespace Events {
     when: Date;
     info: string;
     contactInfo: string;
+    email: string;
   }
   export interface Event extends Base.Record, Base.AuditInfo, CreateRequest {
     state: ItemState;
