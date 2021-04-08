@@ -11,6 +11,8 @@ import {
   createUpdateWrapper,
 } from '../mongo-utils';
 
+type RawSubscription = Omit<Subscriptions.Subscription, 'id'> & { _id: ObjectId };
+
 export class SubscriptionsDb {
   private readonly db: Db;
 
@@ -48,9 +50,18 @@ export class SubscriptionsDb {
     const doc: Subscriptions.CreateDoc = {
       ...request,
       date,
-      // isSent: false,
       state: Subscriptions.State.AWAITING_DISPATCH,
     };
+
+    // Delete any awaiting subscriptions to make sure db-api maintains only one awaiting subscription at the time;
+    const subscriptionsToDelete = await collection
+      .find<RawSubscription>({ state: Subscriptions.State.AWAITING_DISPATCH })
+      .toArray();
+
+    if (subscriptionsToDelete.length) {
+      await collection.deleteMany({ _id: { $in: subscriptionsToDelete.map((sub) => sub._id) } });
+    }
+
     const result = await collection.insertOne(
       createInsertWrapper<Subscriptions.CreateDoc>(doc, userId),
     );
