@@ -16,6 +16,15 @@ export class SubscriptionsRouter {
       }),
     );
 
+    router.get(
+      '/',
+      authenticate({ roles: [Roles.Type.ADMIN] }),
+      handle(async ({ db, params, res }) => {
+        const result = await db.subscriptionsDb.getSubscriptions(params);
+        res.send(result);
+      }),
+    );
+
     return router;
   }
 }
