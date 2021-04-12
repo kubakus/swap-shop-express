@@ -16,7 +16,7 @@ export function createToken(id: string, roles: Roles.Type[]): string {
   return createJwtToken(id, roles, SECRET_KEY, 60 * 60);
 }
 
-type Method = 'GET' | 'POST' | 'PATCH';
+type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 export function createOptions(
   token: string,
   method: Method = 'GET',
