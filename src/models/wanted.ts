@@ -9,7 +9,6 @@ export namespace Wanted {
     itemName: string;
     deal: string;
     email: string;
-    state: ItemState;
   }
 
   export interface Wanted extends Base.Record, Base.AuditInfo, CreateRequest {

@@ -17,8 +17,6 @@ import { AUDIT_FILTERS } from '../../models/filters';
 import { EmailDispatcher } from '../email-dispatcher';
 
 type User = Omit<Users.User, 'id'> & { _id: ObjectId };
-// Don't send password back to user or token
-type UserResponse = Omit<Users.User, 'password' | 'token'>;
 
 const LOGIN_VALIDATION_RULE: Validator.Rules = {
   email: 'required|email',
@@ -51,11 +49,6 @@ export class UsersDb {
     params: unknown,
     emailDispatcher: EmailDispatcher,
   ): Promise<Base.CreateResponse> {
-    const url = UI_URL;
-    if (!url) {
-      throw new Error('Missing UI URL. Creation of new users disabled');
-    }
-
     const validation = new Validator(params, REGISTER_VALIDATION_RULE);
     const isValid = validation.check();
     if (!isValid) {
@@ -86,6 +79,10 @@ export class UsersDb {
       throw new Error('Failed to insert new role');
     }
 
+    const url = UI_URL;
+    if (!url) {
+      throw new Error('Missing UI URL. Creation of new users disabled');
+    }
     await emailDispatcher.createConfirmEmail(request.email, request.name, confirmationToken, url);
 
     return { id: result.insertedId };
@@ -122,28 +119,6 @@ export class UsersDb {
     const token = createJwtToken(user._id.toHexString(), user.roles, SECRET_KEY, TOKEN_TIMEOUT);
     const refreshToken = await tokenDb.createNewRefreshToken(user._id.toHexString(), ipAddress);
     return { token, refreshToken };
-  }
-
-  public async getUserInfo(userId: string): Promise<UserResponse> {
-    const collection = this.db.collection(COLLECTION_USERS);
-    const userInfo = await collection.findOne<UserResponse>(
-      {
-        _id: new ObjectId(userId),
-      },
-      {
-        projection: {
-          id: { $convert: { input: '$_id', to: 'string' } },
-          name: 1,
-          email: 1,
-          _id: 0,
-        },
-      },
-    );
-    if (!userInfo) {
-      throw new BadRequestError('User does not exist');
-    }
-
-    return userInfo;
   }
 
   public async confirmUser(confirmationToken: string): Promise<void> {

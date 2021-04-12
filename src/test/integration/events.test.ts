@@ -36,10 +36,8 @@ describe('Events database testing', () => {
   beforeAll(async () => {
     await mongo.connect();
     db = mongo.db(DB_NAME);
-    // const events = [];
     for (let i = 0; i < 10; i++) {
       const _id = new ObjectId();
-      // eventsIds.push(_id)
       events.push({
         _id,
         eventName: `event ${i}`,
@@ -58,7 +56,7 @@ describe('Events database testing', () => {
   afterAll(async () => {
     await db
       .collection(COLLECTION_EVENTS)
-      .deleteMany({ _id: { $in: [...events.map((event) => event._id), new ObjectId(id)] } });
+      .deleteMany({ _id: { $in: [...events.map((event) => event._id)] } });
     await mongo.close();
   });
 

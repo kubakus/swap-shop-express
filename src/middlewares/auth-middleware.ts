@@ -39,6 +39,7 @@ export function authenticate(options?: AuthOptions): RequestHandler {
         }
       }
     } catch (err) {
+      console.error(`Error occurred while authenticating a user`, err);
       if (err instanceof TokenExpiredError) {
         throw new UnauthorizedError('Token expired!');
       } else {

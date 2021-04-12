@@ -22,9 +22,11 @@ export namespace Users {
   export interface User extends CreateRequest, Base.Record {
     isVerified: boolean;
     roles: Roles.Type[];
+    token: string;
   }
 
   export interface UserBasic extends Base.Record, Base.AuditInfo {
+    name: string;
     email: string;
     roles: Roles.Type[];
     isVerified: boolean;

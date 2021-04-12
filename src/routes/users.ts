@@ -4,6 +4,8 @@ import { authenticate } from '../middlewares/auth-middleware';
 import { UI_URL } from '../common/config';
 import { checkRefreshToken, getRefreshCookieOptions } from '../common/express-utils';
 import { Roles } from '../models/roles';
+import { Users } from '../models/users';
+import { NotFoundError } from '../common/errors/not-found';
 
 const REFRESH_TOKEN_NAME = 'refreshToken';
 export class UsersRouter {
@@ -61,8 +63,12 @@ export class UsersRouter {
       '/me',
       authenticate(),
       handle(async ({ db, userId, res }) => {
-        const result = await db.usersDb.getUserInfo(userId);
-        res.send(result);
+        const f: Users.Request = { id: userId };
+        const result = await db.usersDb.getUsers(f);
+        if (!result.length) {
+          throw new NotFoundError(`User ${userId} does not exist`);
+        }
+        res.send(result[0]);
       }),
     );
 
@@ -71,8 +77,7 @@ export class UsersRouter {
       handle(async ({ req, res, db }) => {
         const uiUrl = UI_URL;
         if (!uiUrl) {
-          res.sendStatus(500);
-          return;
+          throw new Error('Missing UI URl, confirm email endpoint disabled');
         }
         await db.usersDb.confirmUser(req.params.confirmationCode);
 
