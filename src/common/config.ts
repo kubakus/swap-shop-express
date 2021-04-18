@@ -13,19 +13,12 @@ export const COLLECTION_SUBSCRIPTIONS = 'subscriptions';
 // Env Variables
 export const MONGO_URI = getEnvVar('MONGO_URI');
 export const UI_URL = getOptionalEnvVar('UI_URL');
-// export const DB_API_URL = getEnvVar('DB_API_URL');
 
-// TODO change them all to optional
 export const EMAIL = getOptionalEnvVar('SWAPSHOP_EMAIL');
 export const EMAIL_PASSWORD = getOptionalEnvVar('SWAPSHOP_EMAIL_PASSWORD');
 export const EMAIL_SERVICE = getOptionalEnvVar('SWAPSHOP_EMAIL_SERVICE');
 
-// TODO these should be stored in files and paths to those files should be
-// stored as env vars.
-export const SECRET_KEY_EMAIL_CONFIRMATION = 'confirm-email-secret';
-export const PUBLIC_KEY_EMAIL_CONFIRMATION = 'confirm-email-public';
-export const SECRET_KEY = 'swapshop-secret-key';
-export const PUBLIC_KEY = 'swapshop-public-key';
+export const SECRET_KEY = getEnvVar('SECRET_KEY');
 // 5 min in seconds
 export const TOKEN_TIMEOUT = 5 * 60;
 // 1 day in milisecond

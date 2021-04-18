@@ -37,10 +37,6 @@ export class SubscriptionsDb {
     // TODO validator
     const request = params as Subscriptions.CreateRequest;
 
-    // if (this.timeoutReference) {
-    //   throw new BadRequestError('Outstanding subscription already exists');
-    // }
-
     const today = new Date();
     const date = new Date(request.date);
     if (date < today) {

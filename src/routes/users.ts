@@ -23,8 +23,9 @@ export class UsersRouter {
 
     router.post(
       '/register',
-      handle(async ({ res, db, params, emailDispatcher }) => {
-        res.status(201).send(await db.usersDb.createUser(params, emailDispatcher));
+      handle(async ({ res, db, params, emailDispatcher, req }) => {
+        const origin = req.headers.origin || req.hostname;
+        res.status(201).send(await db.usersDb.createUser(params, emailDispatcher, origin));
       }),
     );
 

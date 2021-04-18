@@ -1,7 +1,7 @@
 import { Db, ObjectId } from 'mongodb';
 import { Base } from '../../models/base';
 import { Users } from '../../models/users';
-import { COLLECTION_USERS, SECRET_KEY, TOKEN_TIMEOUT, UI_URL } from '../config';
+import { COLLECTION_USERS, SECRET_KEY, TOKEN_TIMEOUT } from '../config';
 import Bcryptjs from 'bcryptjs';
 import { Roles } from '../../models/roles';
 import Validator from 'validatorjs';
@@ -48,6 +48,7 @@ export class UsersDb {
   public async createUser(
     params: unknown,
     emailDispatcher: EmailDispatcher,
+    origin: string,
   ): Promise<Base.CreateResponse> {
     const validation = new Validator(params, REGISTER_VALIDATION_RULE);
     const isValid = validation.check();
@@ -79,11 +80,12 @@ export class UsersDb {
       throw new Error('Failed to insert new role');
     }
 
-    const url = UI_URL;
-    if (!url) {
-      throw new Error('Missing UI URL. Creation of new users disabled');
-    }
-    await emailDispatcher.createConfirmEmail(request.email, request.name, confirmationToken, url);
+    await emailDispatcher.createConfirmEmail(
+      request.email,
+      request.name,
+      confirmationToken,
+      origin,
+    );
 
     return { id: result.insertedId };
   }

@@ -14,12 +14,16 @@ export function createJwtToken(
   secretKey: Jwt.Secret,
   expiresInSeconds: number,
 ): string {
-  return Jwt.sign({ roles }, secretKey, { expiresIn: expiresInSeconds, subject: userId });
+  return Jwt.sign({ roles }, secretKey, {
+    expiresIn: expiresInSeconds,
+    subject: userId,
+    algorithm: 'HS256',
+  });
 }
 
 // TODO add check for algorithm
 export function verifyJwtToken(token: string, secretKey: Jwt.Secret): TokenPayload {
-  const decoded = Jwt.verify(token, secretKey);
+  const decoded = Jwt.verify(token, secretKey, { algorithms: ['HS256'] });
   if (typeof decoded !== 'object') {
     throw new Error('Failed to decode token');
   }
