@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { handle, handleBasic } from '../middlewares/handler';
 import { authenticate } from '../middlewares/auth-middleware';
-import { UI_URL } from '../common/config';
 import { checkRefreshToken, getRefreshCookieOptions } from '../common/express-utils';
 import { Roles } from '../models/roles';
 import { Users } from '../models/users';
@@ -76,14 +75,10 @@ export class UsersRouter {
     router.get(
       '/confirm/:confirmationCode',
       handle(async ({ req, res, db }) => {
-        const uiUrl = UI_URL;
-        if (!uiUrl) {
-          throw new Error('Missing UI URl, confirm email endpoint disabled');
-        }
         await db.usersDb.confirmUser(req.params.confirmationCode);
-
-        // should include env var
-        res.redirect(uiUrl);
+        const origin = req.headers.origin || req.hostname;
+        res.location(origin);
+        res.redirect('/login');
       }),
     );
     return router;

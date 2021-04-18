@@ -7,20 +7,41 @@ import { ItemState } from '../models/item-state';
 import { Offers } from '../models/offers';
 import { Subscriptions } from '../models/subscriptions';
 import { Wanted } from '../models/wanted';
-import { EMAIL, EMAIL_PASSWORD, EMAIL_SERVICE } from './config';
+import {
+  AWS_ACCESS_KEY_ID,
+  AWS_HOST,
+  AWS_SECRET_ACCESS_KEY,
+  EMAIL,
+  EMAIL_PASSWORD,
+  EMAIL_PORT,
+  EMAIL_SERVICE,
+} from './config';
 import { Database } from './database';
 
-const EMAIL_SETTINGS: EmailSettings | undefined =
-  EMAIL && EMAIL_PASSWORD && EMAIL_SERVICE
-    ? { address: EMAIL, password: EMAIL_PASSWORD, service: EMAIL_SERVICE }
+const AWS_SETTINGS: AwsSettings | undefined =
+  AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && AWS_HOST
+    ? { host: AWS_HOST, user: AWS_ACCESS_KEY_ID, pass: AWS_SECRET_ACCESS_KEY }
     : undefined;
 
-interface EmailSettings {
-  address: string;
-  password: string;
+const EMAIL_SETTINGS: EmailSettings | undefined =
+  EMAIL_PASSWORD && EMAIL_SERVICE && EMAIL
+    ? { user: EMAIL, pass: EMAIL_PASSWORD, service: EMAIL_SERVICE }
+    : undefined;
+
+const DEFAULT_EMAIL_PORT = 465;
+interface AwsSettings extends DefaultTransportSettings {
+  host: string;
+}
+interface EmailSettings extends DefaultTransportSettings {
   service: string;
 }
 
+interface DefaultTransportSettings {
+  host?: string;
+  user: string;
+  pass: string;
+  service?: string;
+}
 export class EmailDispatcher {
   // eslint-disable-next-line no-undef
   private timeoutReference?: NodeJS.Timeout;
@@ -36,20 +57,18 @@ export class EmailDispatcher {
     confirmationToken: string,
     uiUrl: string,
   ): Promise<void> {
-    if (!EMAIL_SETTINGS) {
-      throw new Error('Missing email settings. Email dispatcher disabled');
+    if (!EMAIL) {
+      throw new Error('Missing swapshop email address. Email dispatcher disabled');
     }
 
-    const transport = createTransport({
-      service: EMAIL_SETTINGS.service,
-      auth: {
-        user: EMAIL_SETTINGS.address,
-        pass: EMAIL_SETTINGS.password,
-      },
-    });
+    if (!AWS_SETTINGS || !EMAIL_SETTINGS) {
+      throw new Error('Missing transport settings. Email dispatcher disabled');
+    }
+
+    const transport = this.createEmailTransport(AWS_SETTINGS || EMAIL_SETTINGS);
 
     await transport.sendMail({
-      from: EMAIL_SETTINGS.address,
+      from: EMAIL,
       to: userEmail,
       subject: 'Email confirmation',
       html: `<h1>Email Confirmation</h1>
@@ -61,8 +80,8 @@ export class EmailDispatcher {
   }
 
   public async createDispatchTimeout(db: Database, subscriptionId: string): Promise<void> {
-    if (!EMAIL_SETTINGS) {
-      throw new Error('Missing email settings. Email dispatcher disabled');
+    if (!EMAIL_SETTINGS || !AWS_SETTINGS) {
+      throw new Error('Missing transport settings. Email dispatcher disabled');
     }
 
     const req: Subscriptions.Request = {
@@ -112,8 +131,12 @@ export class EmailDispatcher {
   }
 
   private async dispatch(db: Database, subscription: Subscriptions.Subscription): Promise<void> {
-    if (!EMAIL_SETTINGS) {
-      throw new Error('Missing email settings. Email dispatcher disabled');
+    if (!EMAIL_SETTINGS || !AWS_SETTINGS) {
+      throw new Error('Missing transport settings. Email dispatcher disabled');
+    }
+
+    if (!EMAIL) {
+      throw new Error('Missing swapshop email address. Email dispatcher disabled');
     }
     console.info('Preparing emails for dispatch...');
 
@@ -133,20 +156,14 @@ export class EmailDispatcher {
     }
 
     const emails = users
-      .filter((user) => user.email !== EMAIL_SETTINGS.address)
+      .filter((user) => user.email !== EMAIL)
       .map((filtered) => filtered.email)
       .join(',');
 
-    const transport = createTransport({
-      service: EMAIL_SETTINGS.service,
-      auth: {
-        user: EMAIL_SETTINGS.address,
-        pass: EMAIL_SETTINGS.password,
-      },
-    });
+    const transport = this.createEmailTransport(AWS_SETTINGS || EMAIL_SETTINGS);
 
     const options: Mail.Options = {
-      from: EMAIL_SETTINGS.address,
+      from: EMAIL,
       subject: 'Example Subject',
       to: `<${emails}>`,
       html: this.createHtml(
@@ -283,5 +300,23 @@ export class EmailDispatcher {
     const textResult = `${header}${content}${footer}`;
 
     return html ? htmlResult : textResult;
+  }
+
+  private createEmailTransport(options?: DefaultTransportSettings): Mail {
+    if (!options) {
+      throw new Error('Cannot create transport without settings');
+    }
+    const port = EMAIL_PORT || DEFAULT_EMAIL_PORT;
+    const transport = createTransport({
+      port,
+      host: options.host,
+      secure: port === 465,
+      service: options.service,
+      auth: {
+        user: options.user,
+        pass: options.pass,
+      },
+    });
+    return transport;
   }
 }

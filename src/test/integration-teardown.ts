@@ -8,5 +8,5 @@ module.exports = async () => {
   await stopMongoDb();
   console.info('Stopping server...');
   await stopServer();
-  console.log('Done...');
+  console.info('Done...');
 };

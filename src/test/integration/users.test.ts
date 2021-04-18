@@ -67,7 +67,7 @@ describe('Users database testing', () => {
 
       expect(response.status).toBe(500);
       const error: Error = await response.json();
-      const expectedErrorMessage = 'Missing email settings. Email dispatcher disabled';
+      const expectedErrorMessage = 'Missing swapshop email address. Email dispatcher disabled';
       expect(error.message).toEqual(expect.stringContaining(expectedErrorMessage));
       const newUser = await db
         .collection(COLLECTION_USERS)
