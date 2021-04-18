@@ -3,6 +3,10 @@ import { stderr } from 'process';
 
 process.env.MONGO_URI = 'mongodb://localhost:27018';
 process.env.DB_NAME = 'test';
+process.env.SECRET_KEY = 'test_secret_key';
+
+delete process.env.SWAPSHOP_EMAIL_PASSWORD;
+delete process.env.SWAPSHOP_EMAIL;
 
 let mongoProcess: ChildProcessWithoutNullStreams;
 

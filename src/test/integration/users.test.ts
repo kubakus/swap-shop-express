@@ -66,9 +66,9 @@ describe('Users database testing', () => {
       });
 
       expect(response.status).toBe(500);
-      const message: Error = await response.json();
-      const expectedErrorMessage = 'Missing UI URL. Creation of new users disabled';
-      expect(message.message).toEqual(expect.stringContaining(expectedErrorMessage));
+      const error: Error = await response.json();
+      const expectedErrorMessage = 'Missing email settings. Email dispatcher disabled';
+      expect(error.message).toEqual(expect.stringContaining(expectedErrorMessage));
       const newUser = await db
         .collection(COLLECTION_USERS)
         .findOne<RawUser>({ email: NEW_USER_INFO.email });

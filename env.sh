@@ -1,11 +1,10 @@
 export PORT=4201
 export MONGO_URI="mongodb://localhost"
 
-export UI_URL="http://localhost:4300"
-
 export SWAPSHOP_EMAIL_PASSWORD="SwapShopdev1"
 export SWAPSHOP_EMAIL="swapshopdev@gmail.com"
 export SWAPSHOP_EMAIL_SERVICE="Gmail"
+export SECRET_KEY="f5e5fdf30c90358f40226ce0fa72fd9a"
 
 # swapshopdev@gmail.com
 
