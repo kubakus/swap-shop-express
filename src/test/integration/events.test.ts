@@ -100,7 +100,7 @@ describe('Events database testing', () => {
       const response = await Fetch(EVENTS_ROOT, createOptions(USER_1_TOKEN, 'POST', request));
       expect(response.status).toBe(400);
       expect((await response.json()).message).toEqual(
-        expect.stringContaining('Date must be after or equal to'),
+        expect.stringContaining('Event date must be after or equal to'),
       );
     });
   });

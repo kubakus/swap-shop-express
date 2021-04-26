@@ -3,7 +3,8 @@ import Validator from 'validatorjs';
 import { Base } from '../../models/base';
 import { Events } from '../../models/events';
 import { AUDIT_FILTERS } from '../../models/filters';
-import { COLLECTION_EVENTS, CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL } from '../config';
+import { Subscriptions } from '../../models/subscriptions';
+import { COLLECTION_EVENTS, COLLECTION_SUBSCRIPTIONS } from '../config';
 import { BadRequestError } from '../errors/bad-request';
 import {
   createMatchFilter,
@@ -12,22 +13,12 @@ import {
   createUpdateWrapper,
 } from '../mongo-utils';
 
-const SUBS_SEND_DAY = 1;
-
 const CREATE_EVENT_VALIDATION_RULE: Validator.Rules = {
   eventName: 'required|string',
-  when: `required|date|${CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL}:${getNextDate()}`,
+  when: `required|date`,
   info: 'required|string',
   contactInfo: 'required|string',
 };
-
-// TODO does not work properly, check it for monday and tuesday
-function getNextDate(): Date {
-  const nextDate = new Date();
-  nextDate.setHours(0, 0, 0, 0);
-  nextDate.setDate(nextDate.getDate() + 2 + ((SUBS_SEND_DAY + 7 - nextDate.getDay() - 1) % 7));
-  return nextDate;
-}
 
 export class EventsDb {
   private readonly db: Db;
@@ -54,8 +45,18 @@ export class EventsDb {
 
     const collection = this.db.collection(COLLECTION_EVENTS);
     const request = params as Events.CreateRequest;
+
+    const minDate = (await this.getSubscriptionDate()) || new Date();
+    const when = new Date(request.when);
+
+    if (minDate.getTime() > when.getTime()) {
+      throw new BadRequestError(
+        `Event date must be after or equal to ${minDate.toISOString()}. Date sent: ${when.toISOString()}`,
+      );
+    }
+
     const result = await collection.insertOne(
-      createStateInsertWrapper({ ...request, when: new Date(request.when) }, userId),
+      createStateInsertWrapper({ ...request, when }, userId),
     );
     if (!result.result.ok) {
       throw new Error('Failed to insert new event');
@@ -110,5 +111,17 @@ export class EventsDb {
       ],
     );
     return pipeline;
+  }
+
+  private async getSubscriptionDate(): Promise<Date | undefined> {
+    const collection = this.db.collection(COLLECTION_SUBSCRIPTIONS);
+    const subscription = await collection.findOne<Subscriptions.Subscription>({
+      state: 'AwaitingDispatch',
+    });
+    if (!subscription) {
+      return undefined;
+    }
+
+    return subscription.date;
   }
 }

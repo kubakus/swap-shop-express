@@ -1,7 +1,5 @@
 import { Db, MongoClient } from 'mongodb';
-import Validator from 'validatorjs';
-import { CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL, DB_NAME, MONGO_URI } from '../config';
-import { BadRequestError } from '../errors/bad-request';
+import { DB_NAME, MONGO_URI } from '../config';
 import { EventsDb } from './eventsDb';
 import { OffersDb } from './offersDb';
 import { RefreshTokensDb } from './refreshTokensDb';
@@ -22,7 +20,6 @@ export class Database {
   public readonly subscriptionsDb: SubscriptionsDb;
 
   public static async init(): Promise<Database> {
-    this.initValidatorRules();
     console.info('Connecting to mongo...');
     const mongo = new MongoClient(MONGO_URI, {
       useNewUrlParser: true,
@@ -75,29 +72,5 @@ export class Database {
 
   public async stop(): Promise<void> {
     await this.mongo.close();
-  }
-
-  /**
-   * Function to initialize custom validation rules
-   */
-  private static initValidatorRules(): void {
-    // MUST be used after 'date|' validator rules
-    const dateAfterOrEqualCallback: Validator.RegisterCallback = (
-      value: any,
-      requirement: any,
-    ): boolean => {
-      const valueDate = new Date(value).getTime();
-      const requirementDate = new Date(requirement).getTime();
-      if (requirementDate <= valueDate) {
-        value = new Date(value).toISOString();
-        return true;
-      }
-      throw new BadRequestError(
-        `Date must be after or equal to: ${new Date(
-          requirementDate,
-        ).toISOString()}, current value: ${new Date(valueDate).toISOString()}`,
-      );
-    };
-    Validator.register(CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL, dateAfterOrEqualCallback);
   }
 }

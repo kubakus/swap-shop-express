@@ -28,6 +28,3 @@ export const SECRET_KEY = getEnvVar('SECRET_KEY');
 export const TOKEN_TIMEOUT = 5 * 60;
 // 1 day in milisecond
 export const REFRESH_TOKEN_TIMEOUT = 1 * 24 * 60 * 60 * 1000;
-
-// Validator custom rules. Should start with CUSTOM_VALIDATION_RULE for easier usage
-export const CUSTOM_VALIDATION_RULE_DATE_AFTER_OR_EQUAL = 'custom_date_after_or_equal';

@@ -3,7 +3,6 @@ import express, { Express } from 'express';
 import { Server, createServer } from 'http';
 import { Database } from './common/database';
 import { ApiRouter } from './routes';
-import BodyParser from 'body-parser';
 import CookieParser from 'cookie-parser';
 import { EmailDispatcher } from './common/email-dispatcher';
 
@@ -55,12 +54,20 @@ class NodeServer {
   }
 
   private async configure(): Promise<void> {
-    this.express.use(BodyParser.json());
-    this.express.use(BodyParser.urlencoded({ extended: true }));
+    this.express.use(express.json());
+    this.express.use(express.urlencoded({ extended: true }));
     this.express.use(CookieParser());
 
     this.database = await Database.init();
     this.emailDispatcher = new EmailDispatcher();
+
+    // Recreate subscription timeout on server start
+    const currentSub = await this.database.subscriptionsDb.getSubscriptions({
+      state: 'AwaitingDispatch',
+    });
+    if (currentSub.length) {
+      await this.emailDispatcher.createDispatchTimeout(this.database, currentSub[0].id);
+    }
 
     // Pass db as a locals
     this.express.use((_req, res, next) => {
