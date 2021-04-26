@@ -1,45 +1,46 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+# Db-api repository of SwapShop Management Project
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+## Prerequisites
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+* Docker [Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+* Docker-compose [Mac/Windows/Linux](https://docs.docker.com/compose/install/)
+* Node version ~14.15.4 [Node.js website](https://nodejs.org/en/download/package-manager/#snap) - it is worth to install Node using nvm [tutorial](https://nodesource.com/blog/installing-node-js-tutorial-using-nvm-on-mac-os-x-and-ubuntu/)
 
----
+## List of env variables:
 
-## Edit a file
+### Required
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+1. PORT - port express will listen to
+2. MONGO_URI - URI of database that app should connect to
+3. SECRET_KEY - secret key used for encoding jwt tokens. Recommended to be 32 random characters hex string
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+### Optional
 
----
+All optional env variables are related to email dispatch functionality.
+There are two ways of dispatching emails - with an email account only (dev) or with email account and email service (prod)
+1. SWAPSHOP_EMAIL_PASSWORD - dev
+2. SWAPSHOP_EMAIL - both
+3. SWAPSHOP_EMAIL_SERVICE - dev
+4. SWAPSHOP_EMAIL_PORT - port used for dispatching emails. Default set to 465.
+5. AWS_SECRET_ACCESS_KEY - prod
+6. AWS_ACCESS_KEY_ID - prod
+7. AWS_HOST - prod
+## Build
 
-## Create a file
+Make sure required env variables are stored in appropriate file (env.sh by default).
 
-Next, you’ll add a new file to this repository.
+First run:
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+1. yarn - download dependencies
+2. yarn build - build project
+3. yarn mongo:start - create mongoDb docker container
+4. . ./env.sh (or your own file) - feed env variables
+5. node dist/index.js - start node up with dist/index.js as an entry file
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+Any future run:
 
----
+1. yarn build
+2. yarn mongo:start
+3. . ./env.sh
+4. node dist/index.js
 
-## Clone a repository
-
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
-
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
-
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).

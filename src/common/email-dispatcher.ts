@@ -140,7 +140,7 @@ export class EmailDispatcher {
     }
     console.info('Preparing emails for dispatch...');
 
-    const req = { updatedDate: { before: subscription.createdDate }, state: ItemState.APPROVED };
+    const req = { updatedDate: { before: subscription.date }, state: ItemState.APPROVED };
     const offered = await db.offersDb.getOffers(req);
     const wanted = await db.wantedDb.getWanted(req);
     const events = await db.eventsDb.getEvents(req);
