@@ -72,9 +72,9 @@ export class EmailDispatcher {
       to: userEmail,
       subject: 'Email confirmation',
       html: `<h1>Email Confirmation</h1>
-                <h2>Hello ${userName}</h2>
-                <p>Thank you for registering with SwapShop! Please confirm your email by clicking the link below. It will redirect you to login page</p>
-                <a href=${uiUrl}/api/auth/confirm/${confirmationToken}>Click here to confirm your email</a>
+                <h2>Hello ${userName}!</h2>
+                <p>Thank you for registering with SwapShop! Please confirm your email by clicking the link below. It will redirect you to the login page.</p>
+                <a href=${uiUrl}/api/auth/confirm/${confirmationToken}>Click here to confirm your email.</a>
                 </div>`,
     });
   }
@@ -166,7 +166,7 @@ export class EmailDispatcher {
       from: EMAIL,
       subject: 'Example Subject',
       to: `<${emails}>`,
-      html: this.createHtml(
+      html: this.createEmailContent(
         offered,
         wanted,
         events,
@@ -174,7 +174,13 @@ export class EmailDispatcher {
         subscription.footer,
         true,
       ),
-      text: this.createHtml(offered, wanted, events, subscription.header, subscription.footer),
+      text: this.createEmailContent(
+        offered,
+        wanted,
+        events,
+        subscription.header,
+        subscription.footer,
+      ),
     };
 
     await transport.sendMail(options);
@@ -218,7 +224,7 @@ export class EmailDispatcher {
     }
   }
 
-  private createHtml(
+  private createEmailContent(
     offered: Offers.Offer[],
     wanted: Wanted.Wanted[],
     events: Events.Event[],
