@@ -127,6 +127,20 @@ describe('Events database testing', () => {
         .findOne<RawEvent>({ _id: new ObjectId(id) });
       expect(updatedEvent?.state).toBe(ItemState.APPROVED);
     });
+
+    test('User cannot change state of events (403)', async () => {
+      const request: Events.ChangeStateRequest = {
+        ids: [id, new ObjectId().toHexString()],
+        transition: ItemState.AWAITING_REVIEW,
+      };
+      const response = await Fetch(EVENTS_ROOT, createOptions(USER_1_TOKEN, 'PATCH', request));
+
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
+    });
   });
 
   describe('GET /events', () => {
@@ -151,6 +165,18 @@ describe('Events database testing', () => {
       const results: Events.Event[] = await response.json();
       const received = results[0];
       expect({ ...received, when: new Date(received.when) }).toMatchObject(expected);
+    });
+
+    test('User cannot fetch events (403)', async () => {
+      const response = await Fetch(
+        `${EVENTS_ROOT}?eventName=${events[0].eventName}`,
+        createOptions(USER_1_TOKEN),
+      );
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
     });
   });
 });

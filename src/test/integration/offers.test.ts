@@ -87,7 +87,7 @@ describe('Offers database testing', () => {
   });
 
   describe('PATCH /offers', () => {
-    test('Admin can approve offers', async () => {
+    test('Admin can approve offers (403)', async () => {
       const request: Offers.ChangeStateRequest = {
         ids: [id],
         transition: ItemState.APPROVED,
@@ -105,6 +105,19 @@ describe('Offers database testing', () => {
         .findOne<RawOffer>({ _id: new ObjectId(id) });
       expect(expectedMatch).toEqual(baseResponse);
       expect(updatedOffered?.state).toBe(ItemState.APPROVED);
+    });
+
+    test('User cannot change state of offered', async () => {
+      const request: Offers.ChangeStateRequest = {
+        ids: [id],
+        transition: ItemState.AWAITING_REVIEW,
+      };
+      const response = await Fetch(OFFERS_ROOT, createOptions(USER_1_TOKEN, 'PATCH', request));
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
     });
   });
 
@@ -129,6 +142,18 @@ describe('Offers database testing', () => {
       expect(response.status).toBe(200);
       const result: Offers.Offer[] = await response.json();
       expect(result[0]).toMatchObject(expected);
+    });
+
+    test('User cannot fetch offered (403)', async () => {
+      const response = await Fetch(
+        `${OFFERS_ROOT}?itemName=${offers[0].itemName}`,
+        createOptions(USER_1_TOKEN),
+      );
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
     });
   });
 });

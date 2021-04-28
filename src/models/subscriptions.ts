@@ -14,12 +14,10 @@ export namespace Subscriptions {
   }
 
   export interface CreateDoc extends CreateRequest {
-    // isSent: false;
     state: State.AWAITING_DISPATCH;
   }
 
   export interface Subscription extends CreateRequest, Base.AuditInfo, Base.Record {
-    // isSent: boolean;
     state: State;
   }
 

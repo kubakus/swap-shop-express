@@ -59,7 +59,7 @@ describe('Wanted database testing', () => {
   });
 
   describe('POST /wanted', () => {
-    test('User can create an wanted', async () => {
+    test('User can create n wanted', async () => {
       const request: Wanted.CreateRequest = {
         itemName: 'new item',
         email: 'fake@email.com',
@@ -107,6 +107,19 @@ describe('Wanted database testing', () => {
       expect(expectedMatch).toEqual(baseResponse);
       expect(updatedOffered?.state).toBe(ItemState.APPROVED);
     });
+
+    test('User cannot change state of wanted (403)', async () => {
+      const request: Wanted.ChangeStateRequest = {
+        ids: [id],
+        transition: ItemState.AWAITING_REVIEW,
+      };
+      const response = await Fetch(WANTED_ROOT, createOptions(USER_1_TOKEN, 'PATCH', request));
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
+    });
   });
 
   describe('GET /wanted', () => {
@@ -130,6 +143,18 @@ describe('Wanted database testing', () => {
       expect(response.status).toBe(200);
       const result: Wanted.Wanted[] = await response.json();
       expect(result[0]).toMatchObject(expected);
+    });
+
+    test('User cannot fetch wanted', async () => {
+      const response = await Fetch(
+        `${WANTED_ROOT}?itemName=${wanted[0].itemName}`,
+        createOptions(USER_1_TOKEN),
+      );
+      expect(response.status).toBe(403);
+      const error = await response.json();
+      expect(error.message).toEqual(
+        expect.stringContaining('You do not have permissions to access this resource'),
+      );
     });
   });
 });

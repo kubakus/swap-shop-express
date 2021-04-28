@@ -2,18 +2,10 @@ import { describe, test, beforeAll, afterAll, expect } from '@jest/globals';
 import { MongoClient, Db, ObjectId } from 'mongodb';
 import { COLLECTION_USERS, DB_NAME, MONGO_URI } from '../../common/config';
 import { Users } from '../../models/users';
-import {
-  createToken,
-  TEST_ADMIN_ID,
-  ADMIN_ROLES,
-  TEST_USER_1_ID,
-  USER_ROLES,
-  TEST_API_ROOT,
-  createOptions,
-} from '../helpers';
+import { createToken, TEST_USER_1_ID, USER_ROLES, TEST_API_ROOT, createOptions } from '../helpers';
 import Fetch from 'node-fetch';
 import { BaseError } from '../../common/errors/base-error';
-import { USER_1_EMAIL } from '../seed-db';
+import { USER_1_EMAIL, USER_1_PASSWORD } from '../seed-db';
 import { Roles } from '../../models/roles';
 
 type RawUser = Omit<Users.User, 'id'> & {
@@ -27,7 +19,6 @@ type BasicUserWithoutAuditInfo = Omit<
 
 describe('Users database testing', () => {
   const USERS_ROOT = `${TEST_API_ROOT}/auth`;
-  const ADMIN_TOKEN = createToken(TEST_ADMIN_ID, ADMIN_ROLES);
   const USER_1_TOKEN = createToken(TEST_USER_1_ID, USER_ROLES);
 
   const NEW_USER_INFO: Users.CreateRequest = {
@@ -36,8 +27,6 @@ describe('Users database testing', () => {
     password: 'This is great password',
   };
 
-  USER_1_TOKEN;
-  ADMIN_TOKEN;
   const mongo = new MongoClient(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -98,7 +87,7 @@ describe('Users database testing', () => {
   });
 
   describe('POST /authenticate', () => {
-    test('Unconfirmed users cannot login into the system', async () => {
+    test('Unconfirmed users cannot login into the system (401)', async () => {
       const request: Users.LoginDetails = {
         email: NEW_USER_INFO.email,
         password: NEW_USER_INFO.password,
@@ -110,24 +99,80 @@ describe('Users database testing', () => {
         },
         body: JSON.stringify(request),
       });
-      id;
-      confirmationCode;
 
       expect(response.status).toBe(401);
       const error: BaseError = await response.json();
       const expectedErrorMessage = 'User is not verified';
       expect(error.message).toEqual(expect.stringContaining(expectedErrorMessage));
     });
+
+    test('User cannot login into the system using incorrect password (400)', async () => {
+      const request: Users.LoginDetails = {
+        email: NEW_USER_INFO.email,
+        password: 'incorrect',
+      };
+
+      const response = await Fetch(`${USERS_ROOT}/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      expect(response.status).toBe(400);
+      const error = await response.json();
+      expect(error.message).toEqual(expect.stringContaining('Credentials incorrect'));
+    });
+
+    test('User cannot login into the system using incorrect email (400)', async () => {
+      const request: Users.LoginDetails = {
+        email: 'notAnEmail',
+        password: NEW_USER_INFO.password,
+      };
+
+      const response = await Fetch(`${USERS_ROOT}/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      expect(response.status).toBe(400);
+      const error = await response.json();
+      expect(error.message).toEqual(expect.stringContaining('Failed to validate request'));
+    });
+
+    test('User can login into the system', async () => {
+      const request: Users.LoginDetails = {
+        email: USER_1_EMAIL,
+        password: USER_1_PASSWORD,
+      };
+
+      const response = await Fetch(`${USERS_ROOT}/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      expect(response.status).toBe(200);
+      const cookie = response.headers.get('set-cookie');
+      expect(cookie).not.toBeNull();
+    });
   });
 
-  // describe('GET /confirm/:confirmationCode', () => {
-  //   test('User can confirm their email', async () => {
-  //     console.log("en", process.env.UI_URL)
-  //     const response = await Fetch(`${USERS_ROOT}/confirm/${confirmationCode}`)
-  //     const x = await response.json()
-  //     console.log("x", x)
-  //   })
-  // })
+  describe('GET /confirm/:confirmationCode', () => {
+    test('User can confirm their email', async () => {
+      const response = await Fetch(`${USERS_ROOT}/confirm/${confirmationCode}`);
+      expect(response.redirected).toBe(true);
+      expect(response.url.endsWith('/login')).toBe(true);
+      const user = await db
+        .collection(COLLECTION_USERS)
+        .findOne<RawUser>({ _id: new ObjectId(id) });
+      expect(user?.isVerified).toBe(true);
+    });
+  });
 
   describe('GET /me', () => {
     test('Users can get information about themselves', async () => {

@@ -3,7 +3,6 @@ import { DB_NAME, MONGO_URI } from '../config';
 import { EventsDb } from './eventsDb';
 import { OffersDb } from './offersDb';
 import { RefreshTokensDb } from './refreshTokensDb';
-import { RolesDb } from './rolesDb';
 import { SubscriptionsDb } from './subscriptionDb';
 import { UsersDb } from './usersDb';
 import { WantedDb } from './wantedDb';
@@ -11,7 +10,6 @@ import { WantedDb } from './wantedDb';
 export class Database {
   public readonly mongo: MongoClient;
   public readonly mongoDb: Db;
-  public readonly rolesDb: RolesDb;
   public readonly usersDb: UsersDb;
   public readonly offersDb: OffersDb;
   public readonly wantedDb: WantedDb;
@@ -28,7 +26,6 @@ export class Database {
 
     await mongo.connect();
     const mongoDb = mongo.db(DB_NAME);
-    const rolesDb = new RolesDb(mongoDb);
     const usersDb = new UsersDb(mongoDb);
     const offersDb = new OffersDb(mongoDb);
     const wantedDb = new WantedDb(mongoDb);
@@ -38,7 +35,6 @@ export class Database {
     return new Database(
       mongo,
       mongoDb,
-      rolesDb,
       offersDb,
       usersDb,
       wantedDb,
@@ -51,7 +47,6 @@ export class Database {
   public constructor(
     mongo: MongoClient,
     mongoDb: Db,
-    rolesDb: RolesDb,
     offersDb: OffersDb,
     usersDb: UsersDb,
     wantedDb: WantedDb,
@@ -61,7 +56,6 @@ export class Database {
   ) {
     this.mongo = mongo;
     this.mongoDb = mongoDb;
-    this.rolesDb = rolesDb;
     this.usersDb = usersDb;
     this.offersDb = offersDb;
     this.wantedDb = wantedDb;

@@ -61,7 +61,7 @@ export class EmailDispatcher {
       throw new Error('Missing swapshop email address. Email dispatcher disabled');
     }
 
-    if (!AWS_SETTINGS || !EMAIL_SETTINGS) {
+    if (!(AWS_SETTINGS || EMAIL_SETTINGS)) {
       throw new Error('Missing transport settings. Email dispatcher disabled');
     }
 
@@ -80,7 +80,7 @@ export class EmailDispatcher {
   }
 
   public async createDispatchTimeout(db: Database, subscriptionId: string): Promise<void> {
-    if (!EMAIL_SETTINGS || !AWS_SETTINGS) {
+    if (!(AWS_SETTINGS || EMAIL_SETTINGS)) {
       throw new Error('Missing transport settings. Email dispatcher disabled');
     }
 
@@ -131,7 +131,7 @@ export class EmailDispatcher {
   }
 
   private async dispatch(db: Database, subscription: Subscriptions.Subscription): Promise<void> {
-    if (!EMAIL_SETTINGS || !AWS_SETTINGS) {
+    if (!(AWS_SETTINGS || EMAIL_SETTINGS)) {
       throw new Error('Missing transport settings. Email dispatcher disabled');
     }
 

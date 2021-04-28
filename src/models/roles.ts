@@ -9,8 +9,4 @@ export namespace Roles {
   export interface Role extends Base.Record {
     role: Type;
   }
-
-  export interface CreateRequest {
-    role: Type;
-  }
 }
